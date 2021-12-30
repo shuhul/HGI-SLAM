@@ -1,5 +1,3 @@
 #!/bin/bash
-echo "This is a shell script"
-SOMEVAR=2
-echo "$SOMEVAR"
+/root/ORB_SLAM2/Examples/Monocular/mono_tum /root/ORB_SLAM2/Vocabulary/ORBvoc.txt /root/ORB_SLAM2/Examples/Monocular/TUM1.yaml /root/ORB_FR1
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "This is a shell script"
-SOMEVAR=2
-echo "$SOMEVAR"
-
+export DISPLAY=:0.0
+export DATA_PATH=/root/SP_Data
+export EXPER_PATH=/root/SP_Experiment
+python3 /root/SuperPoint/superpoint/match_features_demo.py sp_v6 $DATA_PATH/HPatches/i_pool/1.ppm $DATA_PATH/HPatches/i_pool/6.ppm
