@@ -4,6 +4,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 import tensorflow as tf  # noqa: E402
+import bow
 
 from superpoint.settings import EXPER_PATH  # noqa: E402
 
@@ -132,29 +133,32 @@ if __name__ == '__main__':
         kp1, desc1 = extract_superpoint_keypoints_and_descriptors(
                 keypoint_map1, descriptor_map1, keep_k_best)
 
-        img2, img2_orig = preprocess_image(img2_file, img_size)
-        out2 = sess.run([output_prob_nms_tensor, output_desc_tensors],
-                        feed_dict={input_img_tensor: np.expand_dims(img2, 0)})
-        keypoint_map2 = np.squeeze(out2[0])
-        descriptor_map2 = np.squeeze(out2[1])
-        kp2, desc2 = extract_superpoint_keypoints_and_descriptors(
-                keypoint_map2, descriptor_map2, keep_k_best)
+        bow.run(kp1, desc1)
 
-        # Match and get rid of outliers
-        m_kp1, m_kp2, matches = match_descriptors(kp1, desc1, kp2, desc2)
-        H, inliers = compute_homography(m_kp1, m_kp2)
+        # img2, img2_orig = preprocess_image(img2_file, img_size)
+        # out2 = sess.run([output_prob_nms_tensor, output_desc_tensors],
+        #                 feed_dict={input_img_tensor: np.expand_dims(img2, 0)})
+        # keypoint_map2 = np.squeeze(out2[0])
+        # descriptor_map2 = np.squeeze(out2[1])
+        # kp2, desc2 = extract_superpoint_keypoints_and_descriptors(
+        #         keypoint_map2, descriptor_map2, keep_k_best)
 
-        # Draw SuperPoint matches
-        matches = np.array(matches)[inliers.astype(bool)].tolist()
-        matched_img = cv2.drawMatches(img1_orig, kp1, img2_orig, kp2, matches,
-                                      None, matchColor=(0, 255, 0),
-                                      singlePointColor=(0, 0, 255))
+        # # Match and get rid of outliers
+        # m_kp1, m_kp2, matches = match_descriptors(kp1, desc1, kp2, desc2)
+        # H, inliers = compute_homography(m_kp1, m_kp2)
 
-        img1Points = getPointTuplesFromKeyPoints(kp1)
-        print(img1Points[0])
+        # # Draw SuperPoint matches
+        # matches = np.array(matches)[inliers.astype(bool)].tolist()
+        # matched_img = cv2.drawMatches(img1_orig, kp1, img2_orig, kp2, matches,
+        #                               None, matchColor=(0, 255, 0),
+        #                               singlePointColor=(0, 0, 255))
+
+        # img1Points = getPointTuplesFromKeyPoints(kp1)
+        # print(img1Points[0])
+        # print(desc1)
         
 
-        cv2.imshow("SuperPoint matches", matched_img)
+        # cv2.imshow("SuperPoint matches", matched_img)
         #
         # # Compare SIFT matches
         # sift_kp1, sift_desc1 = extract_SIFT_keypoints_and_descriptors(img1_orig)
@@ -172,4 +176,4 @@ if __name__ == '__main__':
         # cv2.imshow("SIFT matches", sift_matched_img)
 
 
-        cv2.waitKey(0)
+        # cv2.waitKey(0)
