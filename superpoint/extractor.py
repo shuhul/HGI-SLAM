@@ -1,12 +1,21 @@
+from contextlib import contextmanager
+import sys, os
+
+# sys.stderr = open(os.devnull, "w")
+# sys.stdout = open(os.devnull, "w")
+
+
+import tensorflow as tf
+
 import argparse
 from pathlib import Path
 
 import cv2
 import numpy as np
-import tensorflow as tf  # noqa: E402
-import bow
 
-from superpoint.settings import EXPER_PATH  # noqa: E402
+import BagOfWords
+
+from superpoint.settings import EXPER_PATH
 
 
 def extract_SIFT_keypoints_and_descriptors(img):
@@ -133,7 +142,11 @@ if __name__ == '__main__':
         kp1, desc1 = extract_superpoint_keypoints_and_descriptors(
                 keypoint_map1, descriptor_map1, keep_k_best)
 
-        bow.run(kp1, desc1)
+        # sys.stderr = sys.__stderr__
+
+        print("----------------Start----------------")
+
+        BagOfWords.runBoW(kp1, desc1)
 
         # img2, img2_orig = preprocess_image(img2_file, img_size)
         # out2 = sess.run([output_prob_nms_tensor, output_desc_tensors],
