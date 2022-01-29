@@ -1,5 +1,9 @@
 import matplotlib
+import os,sys
+
+sys.stderr = open(os.devnull, 'w')
 import tensorflow as tf
+sys.stdout = sys.__stderr__
 
 import argparse
 from pathlib import Path
@@ -56,7 +60,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run superpoint on a image sequence')
     parser.add_argument('weights_name', type=str)
     parser.add_argument('path_to_sequence', type=str)
-    # parser.add_argument('img2_path', type=str)
     parser.add_argument('--H', type=int, default=480,
                         help='The height in pixels to resize the images to. \
                                 (default: 480)')
@@ -69,13 +72,21 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     weights_name = args.weights_name
-    imgs_folder = args.path_to_sequence
-    # img1_file = args.img1_path
-    # img2_file = args.img2_path
+    sequence_folder = args.path_to_sequence
     img_size = (args.W, args.H)
 
-    # plt.
-    print(imgs_folder)
+    handler.readFolder(sequence_folder)
+
+
+    frames = handler.getFrames(10)
+
+    # print('hi')
+
+    cv2.destroyAllWindows() 
+
+    # cv2.waitKey(0)
+    # plt.show()
+    # print(imgs_folder)
     # keep_k_best = args.k_best
     # weights_root_dir = Path(EXPER_PATH, 'saved_models')
     # weights_root_dir.mkdir(parents=True, exist_ok=True)
