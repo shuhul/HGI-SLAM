@@ -1,116 +1,72 @@
-import cv2
 import numpy as np
-import os
-import matplotlib.pyplot as plt
-import random
 from sklearn.metrics import confusion_matrix,accuracy_score
 from sklearn.cluster import KMeans
-from sklearn import svm
-
-def runBoW(keypoints, descriptors):
-    read_and_clusterize(descriptors, 1)
-    # kmeans = KMeans(n_clusters = 1)
-    # kmeans.fit(descriptors)
-    # histogram = build_histogram(descriptors, kmeans)
-    # print(histogram)
+import cv2
+import matplotlib as plt
+import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.neighbors import NearestNeighbors
+from sklearn.preprocessing import StandardScaler
 
 
+def create_patch_clusters(descriptor_list, num_clusters):  
+    clusters = KMeans(n_clusters = num_clusters, init="k-means++")
+    clusters.fit(np.vstack(descriptor_list))
+    return clusters
 
 
-#this function will get SIFT descriptors from training images and 
-#train a k-means classifier    
-def read_and_clusterize(descriptors, num_clusters):
-
-    sift_keypoints = []
-    sift_keypoints.append(descriptors)
-
-    sift_keypoints = np.asarray(sift_keypoints)
-    sift_keypoints = np.concatenate(sift_keypoints, axis=0)
-    #with the descriptors detected, lets clusterize them
-    print("Training kmeans")    
-    kmeans = KMeans(n_clusters=num_clusters, random_state=0).fit(sift_keypoints)
-    #return the learned model
-    return kmeans
-
-# #with the k-means model found, this code generates the feature vectors 
-# #by building an histogram of classified keypoints in the kmeans classifier 
-# def calculate_centroids_histogram(file_images, model):
-
-#     feature_vectors=[]
-#     class_vectors=[]
-
-#     with open(file_images) as f:
-#         images_names = f.readlines()
-#         images_names = [a.strip() for a in images_names]
-
-#         for line in images_names:
-#         print(line)
-#         #read image
-#         image = cv2.imread(line,1)
-#         #Convert them to grayscale
-#         image =cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-#         #SIFT extraction
-#         sift = cv2.xfeatures2d.SIFT_create()
-#         kp, descriptors = sift.detectAndCompute(image,None)
-#         #classification of all descriptors in the model
-#         predict_kmeans=model.predict(descriptors)
-#         #calculates the histogram
-#         hist, bin_edges=np.histogram(predict_kmeans)
-#         #histogram is the feature vector
-#         feature_vectors.append(hist)
-#         #define the class of the image (elephant or electric guitar)
-#         class_sample=define_class(line)
-#         class_vectors.append(class_sample)
-
-#     feature_vectors=np.asarray(feature_vectors)
-#     class_vectors=np.asarray(class_vectors)
-#     #return vectors and classes we want to classify
-#     return class_vectors, feature_vectors
+def create_bag_of_visual_words(descriptors, clusters):
+    image_bow = np.zeros(clusters.get_params()['n_clusters'])
+    for i in range(0, len(descriptors)):
+        cluster = clusters.predict(descriptors[i].reshape(1,-1))
+        image_bow[cluster] = image_bow[cluster] + 1
+	# returns the bag of words representation of a single image
+    return image_bow
 
 
-# def define_class(img_patchname):
+def convert_images_to_bows(descriptor_list, clusters):
+    image_bows = []
+    for i in range(0, len(descriptor_list)):
+        image_bows.append(create_bag_of_visual_words(descriptor_list[i], clusters))
+    image_bows = np.vstack(image_bows)
+	# returns the bag of words of each image 
+    return image_bows
 
-#     #print(img_patchname)
-#     print(img_patchname.split('/')[4])
 
-#     if img_patchname.split('/')[4]=="electric_guitar":
-#         class_image=0
+def scale_bows(image_bows):
+    sc = StandardScaler()
+    image_bows_normalized = sc.fit_transform(image_bows)
+	# returns a StandardScaler which can be used to normalize query image (represented by bag of words)
+	# and also returns the normalized bag of words of all images
+    return sc, image_bows_normalized
 
-#     if img_patchname.split('/')[4]=="elephant":
-#     class_image=1
 
-#     return class_image
+def train_knn(image_bows, n_neighbors=5, radius=1):
+    neighbors = NearestNeighbors(n_neighbors = n_neighbors, radius = radius, n_jobs = 2)
+    neighbors.fit(image_bows)
+	# returns the k-NN model
+    return neighbors
 
-# def main(train_images_list, test_images_list, num_clusters):
-#     #step 1: read and detect SURF keypoints over the input image (train images) and clusterize them via k-means 
-#     print("Step 1: Calculating Kmeans classifier")
-#     model= bovw.read_and_clusterize(train_images_list, num_clusters)
 
-#     print("Step 2: Extracting histograms of training and testing images")
-#     print("Training")
-#     [train_class,train_featvec]=bovw.calculate_centroids_histogram(train_images_list,model)
-#     print("Testing")
-#     [test_class,test_featvec]=bovw.calculate_centroids_histogram(test_images_list,model)
+def predict_similar_images(neighbors, image_bow, scaler):
+    image_bow = scaler.transform(image_bow.reshape(1,-1))
+	# returns the similar images indices along with their distances from the bag of words of the similar images.
+    return neighbors.kneighbors(image_bow.reshape(1,-1))
 
-#     #vamos usar os vetores de treino para treinar o classificador
-#     print("Step 3: Training the SVM classifier")
-#     clf = svm.SVC()
-#     clf.fit(train_featvec, train_class)
 
-#     print("Step 4: Testing the SVM classifier")  
-#     predict=clf.predict(test_featvec)
+def runBoW(descriptor_list):
 
-#     score=accuracy_score(np.asarray(test_class), predict)
+    # generate the clusters of the patches
+    clusters = create_patch_clusters(np.vstack(descriptor_list), num_clusters=100)
 
-#     file_object  = open("results.txt", "a")
-#     file_object.write("%f\n" % score)
-#     file_object.close()
+    # convert images into bag of visual words
+    image_bows = convert_images_to_bows(descriptor_list, clusters)
 
-#     print("Accuracy:" +str(score))
+    # normalize the bag of words for k-nearest neighbor
+    scaler, normalized_bows = scale_bows(image_bows)
 
-# if __name__ == "__main__":
-#     main("train.txt", "test.txt", 1000)
-#     main("train.txt", "test.txt", 2000)
-#     main("train.txt", "test.txt", 3000)
-#     main("train.txt", "test.txt", 4000)
-#     main("train.txt", "test.txt", 5000)
+    # train the k-NN
+    neighbors = train_knn(normalized_bows, 5, 1)
+
+    # determine similar images 
+    print(predict_similar_images(neighbors, image_bows[0],scaler))
