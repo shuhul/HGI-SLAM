@@ -1,10 +1,11 @@
+import re
 from cv2 import imread
 import matplotlib
 import os,sys
 
-sys.stderr = open(os.devnull, 'w')
+# sys.stderr = open(os.devnull, 'w')
 import tensorflow as tf
-sys.stdout = sys.__stderr__
+# sys.stdout = sys.__stderr__
 
 import argparse
 from pathlib import Path
@@ -12,8 +13,11 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-import BagOfWords
+import bagofwords as bow
 import handler
+
+import pickle 
+
 
 from superpoint.settings import EXPER_PATH
 
@@ -45,9 +49,8 @@ def extract_superpoint_keypoints_and_descriptors(keypoint_map, descriptor_map,
     return keypoints, desc
 
 
-def preprocess_image(img_file, img_size):
-    img = cv2.imread(img_file, cv2.IMREAD_COLOR)
-    img = cv2.resize(img, img_size)
+def preprocess_image(image, img_size):
+    img = cv2.resize(image, img_size)
     img_orig = img.copy()
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -56,6 +59,30 @@ def preprocess_image(img_file, img_size):
     img_preprocessed = img / 255.
 
     return img_preprocessed, img_orig
+
+def runSuperpoint(weights_dir, frames):
+    if len(frames) == 0:
+        print(f'Skipping {handler.readCurrentIndex()} already proccessed frames')
+        return []
+    descriptor_list = []
+    graph = tf.Graph()
+    with tf.Session(graph=graph) as sess:
+        tf.saved_model.loader.load(sess, [tf.saved_model.tag_constants.SERVING], str(weights_dir))
+        input_img_tensor = graph.get_tensor_by_name('superpoint/image:0')
+        output_prob_nms_tensor = graph.get_tensor_by_name('superpoint/prob_nms:0')
+        output_desc_tensors = graph.get_tensor_by_name('superpoint/descriptors:0')
+
+        count = 1
+        for frame in frames:
+            print(f'Proccessing frame {count} of {len(frames)}')
+            img, img_orig = preprocess_image(frame, img_size)
+            out = sess.run([output_prob_nms_tensor, output_desc_tensors], feed_dict={input_img_tensor: np.expand_dims(img, 0)})
+            keypoint_map = np.squeeze(out[0])
+            descriptor_map = np.squeeze(out[1])
+            keypoints, descriptor = extract_superpoint_keypoints_and_descriptors(keypoint_map, descriptor_map, keep_k_best)
+            descriptor_list.append(descriptor)
+            count += 1
+        return descriptor_list
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -82,27 +109,31 @@ if __name__ == '__main__':
     weights_root_dir.mkdir(parents=True, exist_ok=True)
     weights_dir = Path(weights_root_dir, weights_name)
 
+    saved_folder = 'saved'
 
-    handler.readFolder(sequence_folder)
+    print('\n--------Generating Descriptors---------\n')
 
+    handler.readFolder(sequence_folder, saved_folder)
 
-    frames = handler.getFrames(10)
-    
-    graph = tf.Graph()
-    with tf.Session(graph=graph) as sess:
-        tf.saved_model.loader.load(sess, [tf.saved_model.tag_constants.SERVING], str(weights_dir))
-        input_img_tensor = graph.get_tensor_by_name('superpoint/image:0')
-        output_prob_nms_tensor = graph.get_tensor_by_name('superpoint/prob_nms:0')
-        output_desc_tensors = graph.get_tensor_by_name('superpoint/descriptors:0')
+    num_frames = 10
 
-        img1, img1_orig = preprocess_image(frames[0], img_size)
-        out1 = sess.run([output_prob_nms_tensor, output_desc_tensors], feed_dict={input_img_tensor: np.expand_dims(img1, 0)})
-        keypoint_map1 = np.squeeze(out1[0])
-        descriptor_map1 = np.squeeze(out1[1])
-        kp1, desc1 = extract_superpoint_keypoints_and_descriptors(keypoint_map1, descriptor_map1, keep_k_best)
+    filenames, new_frames = handler.getNewFrames(last=num_frames)
 
-        print("----------------Start----------------")
+    descriptor_list = handler.readDescriptors() + runSuperpoint(weights_dir, new_frames)
 
-        # BagOfWords.runBoW(desc1)
-    cv2.destroyAllWindows() 
+    handler.saveDescriptors(descriptor_list)
+
+    print('\n-------Computing Bag Of Words--------\n')
+
+    training = False
+
+    if training:
+        bow.trainBoW(descriptor_list, n_clusters=3, n_neighbors=3)
+    else:
+        print('Skipping already computed BoW model')
+
+    print('\n-------Detecting Loop Closures--------\n')
+    output = bow.getSimilarBoW(descriptor_list[0])
+
+    print(output)
 
