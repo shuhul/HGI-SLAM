@@ -58,7 +58,8 @@ def getSimilarBoW(descriptor):
 
     image_bow = scaler.transform(image_bow.reshape(1,-1))
 	# returns the similar images indices along with their distances from the bag of words of the similar images.
-    return neighbors.kneighbors(image_bow.reshape(1,-1))
+    output = neighbors.kneighbors(image_bow.reshape(1,-1))[::-1]
+    return output[0][0], output[1][0]
 
 
 def trainBoW(descriptor_list, n_clusters, n_neighbors):
@@ -79,4 +80,37 @@ def trainBoW(descriptor_list, n_clusters, n_neighbors):
     handler.saveKNN(neighbors, scaler, clusters)
 
 
+def isLoopClosure(distance, min_distance):
+    return distance < min_distance
 
+
+def detectLoopClosures(descriptor_list, min_distance):
+    lcc = []
+    for i in range(len(descriptor_list)):
+        indices, distances = getSimilarBoW(descriptor_list[i])
+        for index, distance in zip(indices, distances):
+            if index != i and isLoopClosure(distance, min_distance):
+                lcc.append([i, index])
+                # loop_closures[i] = True
+    loop_closures = [False] * len(descriptor_list)
+    lcc = removeLCCDups(lcc)
+    handler.saveLCC(lcc)
+    for lc in lcc:
+        loop_closures[lc[1]] = True
+    handler.saveLoopClosures(loop_closures)
+                
+def getLoopClosures():
+    loop_closures = handler.readLoopClosures()
+    loop_closure_indices = []
+    for i in range(len(loop_closures)):
+        if loop_closures[i]:
+            loop_closure_indices.append(i)
+    return loop_closure_indices
+
+def removeLCCDups(lcc):
+    res = []
+    [res.append(x) for x in lcc if x[::-1] not in res]
+    return res
+
+def getLCC():
+    return handler.readLCC()

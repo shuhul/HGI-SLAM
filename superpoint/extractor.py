@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
     saved_folder = 'saved'
 
-    print('\n--------Generating Descriptors---------\n')
+    print('\n-------Generating Descriptors--------\n')
 
     handler.readFolder(sequence_folder, saved_folder)
 
@@ -133,7 +133,36 @@ if __name__ == '__main__':
         print('Skipping already computed BoW model')
 
     print('\n-------Detecting Loop Closures--------\n')
-    output = bow.getSimilarBoW(descriptor_list[0])
+    
+    detecting = False
 
-    print(output)
+    min_distance = 1
+    
+    if detecting:
+        bow.detectLoopClosures(descriptor_list, min_distance)
+    else:
+        print('Skipping already detected loop closures')
 
+    loop_closure_indices = bow.getLoopClosures()
+    loop_closure_connections = bow.getLCC()
+
+    print(f'\n-------Detected {len(loop_closure_indices)} loop closures--------\n')
+
+    if len(loop_closure_indices) != 0:
+
+        print(f'Detected loop closures between indices {loop_closure_connections}\n')
+
+        loop_closure_frames = handler.getLoopClosureFrames(loop_closure_indices)
+
+        handler.showLoopClosurePairs(loop_closure_connections)
+
+        # print(f'Detected loop closures at indices {loop_closure_indices}\n')
+
+        # print(f'\n-------Showing Loop Closure Frames--------\n')
+
+        # print('Press n to move to next frame\n')
+
+        # handler.showLoopClosure(loop_closure_frames)
+
+    else:
+        print('No loop closures found')

@@ -4,6 +4,7 @@ import cv2
 from cv2 import imread
 import cv2
 import pickle
+import numpy as np
 
 timestamps = []
 filenames = []
@@ -34,12 +35,48 @@ def getNewFrames(last=len(filenames)):
     saveCurrentIndex(last)
     return filenames[currentIndex:last], images
 
+def getAllFrames(last=len(filenames)):
+    imgs = []
+    for filename in filenames[:last]:
+        imgs.append(cv2.imread(f'{sequence_folder}/{filename}', cv2.IMREAD_COLOR))
+    return imgs
 
+def getLoopClosureFrames(indices):
+    imgs = []
+    for i in range(len(indices)):
+        imgs.append(cv2.imread(f'{sequence_folder}/{filenames[indices[i]]}', cv2.IMREAD_COLOR))
+    return imgs
+
+def getFrame(index):
+    return cv2.imread(f'{sequence_folder}/{filenames[index]}', cv2.IMREAD_COLOR)
+
+def showFrame(frame):
+    cv2.imshow('Frame', frame)
+
+def showLoopClosures(frames):
+    i = 0
+    while i < len(frames):
+        showFrame(frames[i])
+        if (cv2.waitKey(1000) & 0xFF == ord('n')):
+            i+=1
+
+def showLoopClosurePairs(lcc):
+    i = 0
+    while i < len(lcc):
+        pair = lcc[i]
+        img1 = getFrame(pair[0])
+        img2 = getFrame(pair[1])
+        combined = np.hstack((img1, img2))
+        name = f'Loop Closure between frame {pair[0]} and {pair[1]} '
+        cv2.imshow(name, combined)
+        if (cv2.waitKey(10000) & 0xFF == ord('n')):
+            i+=1
+            cv2.destroyWindow(name)
 
 def showVideo():
     timestep = int((30.9/len(filenames))*1000)
     for filename in filenames:
-        cv2.imshow('Video Test', cv2.imread(f'{sequence_folder}/{filename}', cv2.IMREAD_COLOR))
+        cv2.imshow('Video', cv2.imread(f'{sequence_folder}/{filename}', cv2.IMREAD_COLOR))
         if(cv2.waitKey(timestep) & 0xFF == ord('q')):
             break
     cv2.destroyAllWindows() 
@@ -81,3 +118,20 @@ def readKNN():
     scalerFile = open(f'{saved_folder}/scaler_model', 'rb')
     cluster = open(f'{saved_folder}/cluster_model', 'rb')
     return pickle.load(knnFile), pickle.load(scalerFile), pickle.load(cluster)
+
+def saveLoopClosures(loop_closures):
+    with open(f'{saved_folder}/loop_closures.txt', 'w') as lcFile:
+        lcFile.write(str(loop_closures))
+
+def readLoopClosures():
+    with open(f'{saved_folder}/loop_closures.txt', 'r') as lcFile:
+        arr = lcFile.read()[1:-1].replace(' ', '').split(',')
+        return [True if x == 'True' else False for x in arr]
+
+def saveLCC(lcc):
+    lccFile = open(f'{saved_folder}/lcc', 'wb') 
+    pickle.dump(lcc, lccFile)     
+
+def readLCC():
+    lcc = open(f'{saved_folder}/lcc', 'rb')
+    return pickle.load(lcc)
