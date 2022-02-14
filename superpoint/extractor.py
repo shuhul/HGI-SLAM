@@ -13,14 +13,16 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-import bagofwords as bow
-import handler
+import common.handler as handler
+
+import common.bowhandler as bowh
 
 import pickle 
 
 
 from superpoint.settings import EXPER_PATH
 
+weights_dir = ""
 
 def extract_superpoint_keypoints_and_descriptors(keypoint_map, descriptor_map,
                                                  keep_k_points=1000):
@@ -60,9 +62,9 @@ def preprocess_image(image, img_size):
 
     return img_preprocessed, img_orig
 
-def runSuperpoint(weights_dir, frames):
+def runSuperpoint(frames):
     if len(frames) == 0:
-        print(f'Skipping {handler.readCurrentIndex()} already proccessed frames')
+        print(f'Skipping {handler.readCurrentIndex()} already processed frames')
         return []
     descriptor_list = []
     graph = tf.Graph()
@@ -87,8 +89,8 @@ def runSuperpoint(weights_dir, frames):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser(description='Run superpoint on a image sequence')
-    parser.add_argument('weights_name', type=str)
     parser.add_argument('path_to_sequence', type=str)
+    parser.add_argument('--weights_name', type=str, default="sp_v6", help='The weights for the model')
     parser.add_argument('--H', type=int, default=480,
                         help='The height in pixels to resize the images to. \
                                 (default: 480)')
@@ -105,64 +107,70 @@ if __name__ == '__main__':
     img_size = (args.W, args.H)
     keep_k_best = args.k_best
 
+    
     weights_root_dir = Path(EXPER_PATH, 'saved_models')
     weights_root_dir.mkdir(parents=True, exist_ok=True)
     weights_dir = Path(weights_root_dir, weights_name)
 
-    saved_folder = 'saved'
+    print("\nRunning Superpoint")
 
-    print('\n-------Generating Descriptors--------\n')
+    bowh.run(sequence_folder, runSuperpoint)
 
-    handler.readFolder(sequence_folder, saved_folder)
+    # saved_folder = 'saved'
 
-    num_frames = 10
+    # print('\n-------Generating Descriptors--------\n')
 
-    filenames, new_frames = handler.getNewFrames(last=num_frames)
+    # handler.readFolder(sequence_folder, saved_folder)
 
-    descriptor_list = handler.readDescriptors() + runSuperpoint(weights_dir, new_frames)
+    # num_frames = 10
 
-    handler.saveDescriptors(descriptor_list)
+    # filenames, new_frames = handler.getNewFrames(last=num_frames)
 
-    print('\n-------Computing Bag Of Words--------\n')
+    # descriptor_list = handler.readDescriptors() + runSuperpoint(weights_dir, new_frames)
 
-    training = False
+    # handler.saveDescriptors(descriptor_list)
 
-    if training:
-        bow.trainBoW(descriptor_list, n_clusters=3, n_neighbors=3)
-    else:
-        print('Skipping already computed BoW model')
+    # print('\n-------Computing Bag Of Words--------\n')
 
-    print('\n-------Detecting Loop Closures--------\n')
+    # training = False
+
+    # if training:
+    #     bow.trainBoW(descriptor_list, n_clusters=3, n_neighbors=3)
+    # else:
+    #     print('Skipping already computed BoW model')
+
+    # print('\n-------Detecting Loop Closures--------\n')
     
-    detecting = False
+    # detecting = False
 
-    min_distance = 1
+    # min_distance = 1
     
-    if detecting:
-        bow.detectLoopClosures(descriptor_list, min_distance)
-    else:
-        print('Skipping already detected loop closures')
+    # if detecting:
+    #     bow.detectLoopClosures(descriptor_list, min_distance)
+    # else:
+    #     print('Skipping already detected loop closures')
 
-    loop_closure_indices = bow.getLoopClosures()
-    loop_closure_connections = bow.getLCC()
+    # loop_closure_indices = bow.getLoopClosures()
+    
+    # loop_closure_connections = bow.getLCC()
 
-    print(f'\n-------Detected {len(loop_closure_indices)} loop closures--------\n')
+    # print(f'\n-------Detected {len(loop_closure_indices)} loop closures--------\n')
 
-    if len(loop_closure_indices) != 0:
+    # if len(loop_closure_indices) != 0:
 
-        print(f'Detected loop closures between indices {loop_closure_connections}\n')
+    #     print(f'Detected loop closures between indices {loop_closure_connections}\n')
 
-        loop_closure_frames = handler.getLoopClosureFrames(loop_closure_indices)
+    #     loop_closure_frames = handler.getLoopClosureFrames(loop_closure_indices)
 
-        handler.showLoopClosurePairs(loop_closure_connections)
+    #     handler.showLoopClosurePairs(loop_closure_connections)
 
-        # print(f'Detected loop closures at indices {loop_closure_indices}\n')
+    #     # print(f'Detected loop closures at indices {loop_closure_indices}\n')
 
-        # print(f'\n-------Showing Loop Closure Frames--------\n')
+    #     # print(f'\n-------Showing Loop Closure Frames--------\n')
 
-        # print('Press n to move to next frame\n')
+    #     # print('Press n to move to next frame\n')
 
-        # handler.showLoopClosure(loop_closure_frames)
+    #     # handler.showLoopClosure(loop_closure_frames)
 
-    else:
-        print('No loop closures found')
+    # else:
+    #     print('No loop closures found')

@@ -9,7 +9,7 @@ from sklearn.cluster import KMeans
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
 
-import handler
+import common.handler as handler
 
 
 def create_patch_clusters(descriptor_list, num_clusters):  
