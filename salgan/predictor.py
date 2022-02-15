@@ -1,4 +1,5 @@
 import os
+from cv2 import IMREAD_GRAYSCALE
 import numpy as np
 from tqdm import tqdm
 import cv2
@@ -7,28 +8,21 @@ from utils import *
 from constants import *
 from models.model_bce import ModelBCE
 import common.handler as handler
+import generator
 import argparse
 import theano
+import matplotlib.pyplot as plt
 
-
-def test(path_to_images, path_output_maps, model_to_test=None):
-    list_img_files = [k.split('/')[-1].split('.')[0] for k in glob.glob(os.path.join(path_to_images, '*'))]
-    # Load Data
-    list_img_files.sort()
-    for curr_file in tqdm(list_img_files, ncols=20):
-        print(os.path.join(path_to_images, curr_file + '.jpg'))
-        img = cv2.cvtColor(cv2.imread(os.path.join(path_to_images, curr_file + '.jpg'), cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
-        predict(model=model_to_test, image_stimuli=img, name=curr_file, path_output_maps=path_output_maps)
 
 def preprocess_image(image, img_size):
     img = cv2.resize(image, img_size, interpolation=cv2.INTER_AREA)
     img_orig = img.copy()
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img_preprocessed = img
+    img_gs = cv2.cvtColor(img_preprocessed, cv2.COLOR_RGB2GRAY)
+    return img_preprocessed, img_gs, img_orig
 
-    return img_preprocessed, img_orig
-
-def generateHeatmap(img):
+def extractHeatmap(img):
     model = ModelBCE(INPUT_SIZE[0], INPUT_SIZE[1], batch_size=8)
     load_weights(model.net['output'], path='gen_', epochtoload=90)
     size = (img.shape[1], img.shape[0])
@@ -49,10 +43,6 @@ def generateHeatmap(img):
 
     return saliency_map
 
-def generateKeypoints(heatmap):
-    pass
-def generateDescriptor(keypoints):
-    pass
 
 def runSalgan(frames):
     if len(frames) == 0:
@@ -63,15 +53,19 @@ def runSalgan(frames):
     count = 1
     for frame in frames:
         print(f'Proccessing frame {count} of {len(frames)}')
-        img, img_orig = preprocess_image(frame, (640, 480))
-        # heatmap = generateHeatmap(img)
-        heatmap = cv2.imread('heat.png')
+        img, img_gs, img_orig = preprocess_image(frame, (640, 480))
+        # heatmap = extractHeatmap(img)
+        heatmap = cv2.imread('heat.png', IMREAD_GRAYSCALE)
+        keypoints = generator.generateKeypoints(img_gs, heatmap)
+        for keypoint in keypoints:
+            cv2.circle(img_orig, keypoint, 1, color=(0,255,0), thickness=2)
+        cv2.imwrite("key.png", img_orig)
 
 
         # cv2.imwrite('orig.png', img_orig)
         # cv2.imwrite('heat.png', heatmap)
         
-        # keypoints = generateKeypoints(heatmap)
+    
         # descriptor = generateDescriptor(keypoints)
         # descriptor_list.append(descriptor)
         count += 1
@@ -85,15 +79,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     sequence_folder = args.path_to_sequence
-
-
-    # Create network
-    # model = ModelBCE(INPUT_SIZE[0], INPUT_SIZE[1], batch_size=8)
-    # # Here need to specify the epoch of model sanpshot
-    # load_weights(model.net['output'], path='gen_', epochtoload=90)
-    # # Here need to specify the path to images and output path
-    # test(path_to_images='../images/', path_output_maps='../saliency/', model_to_test=model)
-
 
     saved_folder = 'saved'
 
