@@ -26,13 +26,14 @@ def readFolder(folder, saved):
     
     
 
-def getNewFrames(last=len(filenames)):
+def getNewFrames(last=len(filenames),shouldsave=True):
     readCurrentIndex()
     if last <= currentIndex:
         return [], []
     for filename in filenames[currentIndex:last]:
         images.append(cv2.imread(f'{sequence_folder}/{filename}', cv2.IMREAD_COLOR))
-    saveCurrentIndex(last)
+    if shouldsave:
+        saveCurrentIndex(last)
     return filenames[currentIndex:last], images
 
 def getAllFrames(last=len(filenames)):
