@@ -57,12 +57,14 @@ def runSalgan(frames):
         print(f'Proccessing frame {count} of {len(frames)}')
         img, img_gs, img_orig = preprocess_image(frame, (640, 480))
         # heatmap = extractHeatmap(img)
-        # heatmap = cv2.imread('heat.png', IMREAD_GRAYSCALE)
+        heatmap = cv2.imread('heat.png', IMREAD_GRAYSCALE)
         # keypoints = generator.generateKeypoints(img_gs, heatmap)
         # pickle.dump(keypoints, open("keypoints", "wb"))
-        keypoints = pickle.load(open("keypoints", "rb"))
-        keypoints = generator.kpsToKPS(keypoints)
-        descriptor = generator.generateDescriptors(img_gs, keypoints)
+        # keypoints = pickle.load(open("keypoints", "rb"))
+        # keypoints = generator.kpsToKPS(keypoints)
+        # descriptor = generator.generateDescriptors(img_gs, keypoints)
+
+        keypoints, descriptor = generator.generateKeypointsAndDescriptors(img_gs, heatmap)
 
         print("\nDescriptor from SALGAN\n")
         print(descriptor[0])
@@ -74,7 +76,6 @@ def runSalgan(frames):
         print(des[0])
         print("\n\n")
 
-        # keypoints, descriptor = generator.generateKeypointsAndDescriptors(img_gs, heatmap)
         # for keypoint in keypoints:
         #     cv2.circle(img_orig, keypoint, 1, color=(0,255,0), thickness=2)
         # cv2.imwrite("key.png", img_orig)
