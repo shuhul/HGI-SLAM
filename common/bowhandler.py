@@ -6,17 +6,18 @@ def run(sequence_folder, featureExtractor):
 
     saved_folder = 'saved'
 
-    print('\n-------Generating Descriptors--------\n')
+    for i in range(4):
+        print('\n-------Generating Descriptors--------\n')
 
-    handler.readFolder(sequence_folder, saved_folder)
+        handler.readFolder(sequence_folder, saved_folder)
 
-    num_frames = 150 # max 750
+        num_frames = 150 + (50*i) # max 750
 
-    filenames, new_frames = handler.getNewFrames(last=num_frames)
+        filenames, new_frames = handler.getNewFrames(last=num_frames)
 
-    descriptor_list = handler.readDescriptors() + featureExtractor(new_frames)
+        descriptor_list = handler.readDescriptors() + featureExtractor(new_frames)
 
-    handler.saveDescriptors(descriptor_list)
+        handler.saveDescriptors(descriptor_list)
 
     # print('\n-------Computing Bag Of Words--------\n')
 
