@@ -10,7 +10,7 @@ def run(sequence_folder, featureExtractor):
 
     handler.readFolder(sequence_folder, saved_folder)
 
-    num_frames = 100 # max 750
+    num_frames = 150 # max 750
 
     filenames, new_frames = handler.getNewFrames(last=num_frames)
 
