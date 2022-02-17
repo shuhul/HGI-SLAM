@@ -69,10 +69,15 @@ def showLoopClosurePairs(lcc):
         img2 = getFrame(pair[1])
         combined = np.hstack((img1, img2))
         name = f'Loop Closure between frame {pair[0]} and {pair[1]} '
+        cv2.namedWindow(name, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(name, 640*2, 480)
         cv2.imshow(name, combined)
-        if (cv2.waitKey(10000) & 0xFF == ord('n')):
+        out = cv2.waitKey(0)
+        if (out & 0xFF) == ord('n'):
             i+=1
             cv2.destroyWindow(name)
+        if (out & 0xFF) == ord('q'):
+            break
 
 def showVideo():
     timestep = int((30.9/len(filenames))*1000)
