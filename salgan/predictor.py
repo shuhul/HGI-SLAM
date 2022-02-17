@@ -14,6 +14,7 @@ import argparse
 import theano
 import pickle
 import matplotlib.pyplot as plt
+import common.bowhandler as bowh
 
 
 def preprocess_image(image, img_size):
@@ -24,9 +25,7 @@ def preprocess_image(image, img_size):
     img_gs = cv2.cvtColor(img_preprocessed, cv2.COLOR_RGB2GRAY)
     return img_preprocessed, img_gs, img_orig
 
-def extractHeatmap(img):
-    model = ModelBCE(INPUT_SIZE[0], INPUT_SIZE[1], batch_size=8)
-    load_weights(model.net['output'], path='gen_', epochtoload=90)
+def extractHeatmap(img, model):
     size = (img.shape[1], img.shape[0])
     blur_size = 5
 
@@ -52,12 +51,15 @@ def runSalgan(frames):
         return []
     descriptor_list = []
 
+    model = ModelBCE(INPUT_SIZE[0], INPUT_SIZE[1], batch_size=8)
+    load_weights(model.net['output'], path='gen_', epochtoload=90)
+
     count = 1
     for frame in frames:
         print(f'Proccessing frame {count} of {len(frames)}')
         img, img_gs, img_orig = preprocess_image(frame, (640, 480))
-        # heatmap = extractHeatmap(img)
-        heatmap = cv2.imread('heat.png', IMREAD_GRAYSCALE)
+        heatmap = extractHeatmap(img, model)
+        # heatmap = cv2.imread('heat.png', IMREAD_GRAYSCALE)
         # keypoints = generator.generateKeypoints(img_gs, heatmap)
         # pickle.dump(keypoints, open("keypoints", "wb"))
         # keypoints = pickle.load(open("keypoints", "rb"))
@@ -66,15 +68,15 @@ def runSalgan(frames):
 
         keypoints, descriptor = generator.generateKeypointsAndDescriptors(img_gs, heatmap)
 
-        print("\nDescriptor from SALGAN\n")
-        print(descriptor[0])
+        # print("\nDescriptor from SALGAN\n")
+        # print(descriptor[0])
 
-        sift = cv2.xfeatures2d.SIFT_create()
-        kp, des = sift.detectAndCompute(img_gs,None)
+        # sift = cv2.xfeatures2d.SIFT_create()
+        # kp, des = sift.detectAndCompute(img_gs,None)
 
-        print("\nDescriptor from SIFT\n")
-        print(des[0])
-        print("\n\n")
+        # print("\nDescriptor from SIFT\n")
+        # print(des[0])
+        # print("\n\n")
 
         # for keypoint in keypoints:
         #     cv2.circle(img_orig, keypoint, 1, color=(0,255,0), thickness=2)
@@ -85,7 +87,7 @@ def runSalgan(frames):
         # cv2.imwrite('heat.png', heatmap)
         
         
-        # descriptor_list.append(descriptor)
+        descriptor_list.append(descriptor)
         count += 1
     return descriptor_list
 
@@ -97,20 +99,19 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     sequence_folder = args.path_to_sequence
+    
+    bowh.run(sequence_folder, runSalgan)
+    # saved_folder = 'saved'
 
-    saved_folder = 'saved'
+    # print('\n-------Generating Descriptors--------\n')
 
-    print('\n-------Generating Descriptors--------\n')
+    # handler.readFolder(sequence_folder, saved_folder)
 
-    handler.readFolder(sequence_folder, saved_folder)
+    # num_frames = 2
 
-    num_frames = 1
+    # filenames, new_frames = handler.getNewFrames(last=num_frames)
 
-    filenames, new_frames = handler.getNewFrames(last=num_frames, shouldsave=False)
-
-    runSalgan(new_frames)
-
-    # descriptor_list = handler.readDescriptors() + featureExtractor(new_frames)
+    # descriptor_list = handler.readDescriptors() + runSalgan(new_frames)
 
     # handler.saveDescriptors(descriptor_list)
 

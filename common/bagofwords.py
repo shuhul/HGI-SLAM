@@ -93,11 +93,13 @@ def detectLoopClosures(descriptor_list, min_distance):
                 lcc.append([i, index])
                 # loop_closures[i] = True
     loop_closures = [False] * len(descriptor_list)
-    lcc = removeLCCDups(lcc)
+    loop_closure_frames = [-1] * len(descriptor_list)
+    lcc = cleanUpLCC(removeLCCDups(lcc))
     handler.saveLCC(lcc)
     for lc in lcc:
         loop_closures[lc[1]] = True
-    handler.saveLoopClosures(loop_closures)
+        loop_closure_frames[lc[1]] = lc[0]
+    handler.saveLoopClosures(loop_closures, loop_closure_frames)
                 
 def getLoopClosures():
     loop_closures = handler.readLoopClosures()
@@ -112,5 +114,15 @@ def removeLCCDups(lcc):
     [res.append(x) for x in lcc if x[::-1] not in res]
     return res
 
+def cleanUpLCC(lcc):
+    res = []
+    [res.append(x) for x in lcc if x[0] < x[1]]
+    res2  = []
+    last  = []
+    for lc in res:
+        if lc[1] not in last:
+            res2.append(lc)
+            last.append(lc[1])
+    return res2
 def getLCC():
     return handler.readLCC()

@@ -120,9 +120,11 @@ def readKNN():
     cluster = open(f'{saved_folder}/cluster_model', 'rb')
     return pickle.load(knnFile), pickle.load(scalerFile), pickle.load(cluster)
 
-def saveLoopClosures(loop_closures):
+def saveLoopClosures(loop_closures, loop_closure_frames):
     with open(f'{saved_folder}/loop_closures.txt', 'w') as lcFile:
         lcFile.write(str(loop_closures))
+    with open(f'{saved_folder}/loop_closure_frames.txt', 'w') as lciFile:
+        lciFile.write(str(loop_closure_frames))
 
 def readLoopClosures():
     with open(f'{saved_folder}/loop_closures.txt', 'r') as lcFile:

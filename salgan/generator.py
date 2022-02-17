@@ -6,12 +6,18 @@ import numpy as np
 from cv2 import KeyPoint
 from numpy.linalg import norm
 from scipy.interpolate import interp1d
+import pickle
+# from numba import jit, cuda
+# import code
+
+# code.interact(local=locals)
 
 s_smooth = 1
 g_ths = [20, 20, 20]
 has_selected = False
 keypoints = []
 num_sel = 0
+
 
 def generateKeypoints(image_gs, heatmap, num_points=1000):
     global s_smooth, g_ths, has_selected, keypoints, num_sel, total_weight
@@ -77,6 +83,7 @@ def computeGradients(map):
     oren_grad = np.rad2deg(np.arctan2(y_grad, x_grad)) % 360
     return total_grad, oren_grad
 
+
 def quarterPatch(p):
     hs = (int)(p.shape[0]/2)
     return [p[:hs,:hs],p[:hs,hs:],p[hs:,:hs],p[hs:,hs:]]
@@ -120,9 +127,15 @@ def generateDescriptors(image_gs, keypoints):
                     oren = oren.flatten()
                     for i in range(len(oren)):
                         oren_hist[int(oren[i]//45)] += mag[i]
-                    oren_hist = smoothHist(oren_hist)
+                    # oren_hist = smoothHist(oren_hist)
                     all_hist.append(oren_hist)
-            descriptor_vector = np.array(all_hist, dtype = 'float32').flatten()
+            all_hist = np.array(all_hist, dtype = 'float32')
+
+            all_hist = all_hist.reshape((8,4,4))
+            for i in range(len(all_hist)):
+                all_hist[i] = cv2.GaussianBlur(all_hist[i], (5, 5), 0.5, 0.5)
+                
+            descriptor_vector = all_hist.flatten()
             threshold = norm(descriptor_vector) * 0.2
             descriptor_vector[descriptor_vector > threshold] = threshold
             descriptor_vector /= max(norm(descriptor_vector), 1e-7)
@@ -133,8 +146,14 @@ def generateDescriptors(image_gs, keypoints):
 
     return np.array(descriptors, dtype = 'float32')
 
-
 def generateKeypointsAndDescriptors(image_gs, heatmap):
     keypoints = generateKeypoints(image_gs, heatmap)
+    # x = add(1,2)
+    # pickle.dump(keypoints, open("keypoints", "wb"))
+    # keypoints = kpsToKPS(pickle.load(open("keypoints", "rb")))
     descriptors = generateDescriptors(image_gs, keypoints)
     return keypoints, descriptors
+
+# @jit(nopython=True)
+# def add(a,b):
+#     return a+b
