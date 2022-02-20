@@ -9,8 +9,8 @@ import numpy as np
 timestamps = []
 filenames = []
 images = []
-sequence_folder = ''
-saved_folder = ''
+sequence_folder = '/root/ORB_FR1'
+saved_folder = 'saved'
 
 currentIndex = 0
 

@@ -2,6 +2,7 @@ import common.handler as handler
 import common.bagofwords as bow
 
 
+
 def run(sequence_folder, featureExtractor, num_frames=750, training=True, num_clusters=3, num_neighbors=3, detecting=True, max_distance=1):
 
     saved_folder = 'saved'
@@ -50,11 +51,18 @@ def run(sequence_folder, featureExtractor, num_frames=750, training=True, num_cl
         print('No loop closures found')
 
 
-def combined(num_frames=750, detecting=True, sup_weight=1, sal_weight=1, sim_threshold=1):
+def combined(sequence_folder, num_frames=750, detecting=True, sup_weight=1, sal_weight=1, sim_threshold=1):
+
     distance_threshold = 1/sim_threshold
 
+    saved_folder = 'saved'
+
+    handler.readFolder(sequence_folder, saved_folder) 
+
+    print('\n-------Detecting Loop Closures--------\n')
+
     if detecting:
-        bow.detectCombinedLC(sup_weight, sal_weight, distance_threshold, num_frames)
+        bow.detectCombinedLC(sup_weight, sal_weight, distance_threshold, max_frames=num_frames)
     else:
         print('Skipping already detected loop closures')
     

@@ -12,6 +12,7 @@ from sklearn.preprocessing import StandardScaler
 
 import common.handler as handler
 import math
+import os
 
 
 def create_patch_clusters(descriptor_list, num_clusters):  
@@ -148,5 +149,56 @@ def getLCC():
 
 
 
-def detectCombinedLC(sup_weight, sal_weight, max_distance, max=100000):
-    pass
+def detectCombinedLC(sup_weight, sal_weight, max_distance, max_frames=750):
+    os.chdir('../superpoint')
+    sup_desc = handler.readDescriptors(max=max_frames)
+    os.chdir('../salgan')
+    sal_desc = handler.readDescriptors(max=max_frames)
+    os.chdir('../common')
+
+    
+
+    lcc = []
+    for i in range(max_frames):
+        os.chdir('../superpoint')
+        sup_indices, sup_distances = getSimilarBoW(sup_desc[i])
+        os.chdir('../salgan')
+        sal_indices, sal_distances = getSimilarBoW(sal_desc[i])
+        
+        sup_min_index = sup_distances[1:].argmin()+1
+        sup_min = sup_distances[sup_min_index]
+        sal_avg = np.average(sal_distances[1:])
+        distance = ((sup_min*10.0*sup_weight) + (sal_avg*0.833*sal_weight))/(sup_weight+sal_weight)
+        isLc = isLoopClosure(distance, max_distance) and sup_indices[sup_min_index] < max_frames
+        print(f'Processing frame {i} distance: {round(distance,3)} candidate: {isLc}')
+        if isLc:
+            lcc.append([i , sup_indices[sup_min_index]])
+
+    os.chdir('../common')
+
+    loop_closures = [False] * max_frames
+    loop_closure_frames = [-1] * max_frames
+
+    print(f'\nDetected {len(lcc)} loop closure canidates')
+
+    lcc1 = removeLCCDups(lcc)
+
+    print(f'\nRemoved {len(lcc)-len(lcc1)} duplicate loop closure canidates')
+
+    lcc2 = cleanUpLCC(lcc1)
+
+    print(f'\nCleaned {len(lcc1)-len(lcc2)} similar loop closure canidates')
+
+    lcc3 = removeCloseLCC(lcc2)
+
+    print(f'\nDiscarded {len(lcc2)-len(lcc3)} adjacent loop closure canidates')
+    
+    lcc = lcc3
+
+    handler.saveLCC(lcc)
+
+    for lc in lcc:
+        loop_closures[lc[1]] = True
+        loop_closure_frames[lc[1]] = lc[0]
+
+    handler.saveLoopClosures(loop_closures, loop_closure_frames)
