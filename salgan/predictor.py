@@ -99,5 +99,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     sequence_folder = args.path_to_sequence
-    
-    bowh.run(sequence_folder, runSalgan, num_frames=300, training=False, detecting=True, max_distance=0.5)
+
+    bowh.run(sequence_folder, runSalgan, num_frames=300, training=False, num_clusters=8, num_neighbors=5, detecting=False, max_distance=1.2)

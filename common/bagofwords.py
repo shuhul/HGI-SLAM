@@ -97,9 +97,9 @@ def detectLoopClosures(descriptor_list, max_distance, max=100000):
 
     loop_closures = [False] * len(descriptor_list)
     loop_closure_frames = [-1] * len(descriptor_list)
-
+    
     lcc = removeCloseLCC(cleanUpLCC(removeLCCDups(lcc)))
-
+   
     handler.saveLCC(lcc)
 
     for lc in lcc:
@@ -136,7 +136,17 @@ def removeCloseLCC(lcc):
     for lc in lcc:
         if math.fabs(lc[0] - lc[1]) > 10:
             res.append(lc)
-    return res
+    res.sort(key = lambda x: x[1]) 
+    res2 = []
+    for i in range(len(res)-1):
+        if res[i+1][1]-res[i][1] > 10:
+            res2.append(res[i])
+    return res2
 
 def getLCC():
     return handler.readLCC()
+
+
+
+def detectCombinedLC(sup_weight, sal_weight, max_distance, max=100000):
+    pass
