@@ -100,18 +100,4 @@ if __name__ == "__main__":
 
     sequence_folder = args.path_to_sequence
     
-    bowh.run(sequence_folder, runSalgan)
-    # saved_folder = 'saved'
-
-    # print('\n-------Generating Descriptors--------\n')
-
-    # handler.readFolder(sequence_folder, saved_folder)
-
-    # num_frames = 2
-
-    # filenames, new_frames = handler.getNewFrames(last=num_frames)
-
-    # descriptor_list = handler.readDescriptors() + runSalgan(new_frames)
-
-    # handler.saveDescriptors(descriptor_list)
-
+    bowh.run(sequence_folder, runSalgan, num_frames=300, training=False, detecting=True, max_distance=0.5)

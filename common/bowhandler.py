@@ -2,25 +2,23 @@ import common.handler as handler
 import common.bagofwords as bow
 
 
-def run(sequence_folder, featureExtractor):
+def run(sequence_folder, featureExtractor, num_frames=750, training=True, detecting=True, max_distance=1):
 
     saved_folder = 'saved'
 
     print('\n-------Generating Descriptors--------\n')
 
-    handler.readFolder(sequence_folder, saved_folder)
-
-    num_frames = 300 # max 750
+    handler.readFolder(sequence_folder, saved_folder) 
 
     filenames, new_frames = handler.getNewFrames(last=num_frames)
 
-    descriptor_list = handler.readDescriptors() + featureExtractor(new_frames)
+    descriptor_list = handler.readDescriptors(max=num_frames) + featureExtractor(new_frames)
 
     handler.saveDescriptors(descriptor_list)
 
-    print('\n-------Computing Bag Of Words--------\n')
+    print(len(descriptor_list))
 
-    training = False
+    print('\n-------Computing Bag Of Words--------\n')
 
     if training:
         bow.trainBoW(descriptor_list, n_clusters=3, n_neighbors=3)
@@ -29,12 +27,8 @@ def run(sequence_folder, featureExtractor):
 
     print('\n-------Detecting Loop Closures--------\n')
     
-    detecting = False
-
-    min_distance = 1
-    
     if detecting:
-        bow.detectLoopClosures(descriptor_list, min_distance)
+        bow.detectLoopClosures(descriptor_list, max_distance, max=num_frames)
     else:
         print('Skipping already detected loop closures')
 

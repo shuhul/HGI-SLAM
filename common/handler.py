@@ -106,9 +106,13 @@ def saveDescriptors(descriptor_list):
     pickle.dump(descriptor_list, outfile)
 
 
-def readDescriptors():
-    infile = open(f'{saved_folder}/descriptor_list.obj', 'rb') 
-    return pickle.load(infile)
+def readDescriptors(max=100000):
+    infile = open(f'{saved_folder}/descriptor_list.obj', 'rb')
+    desc_list = pickle.load(infile)
+    if len(desc_list) < max:
+        return desc_list
+    else:
+        return desc_list[:max]
 
 
 def saveKNN(KNN, scaler, cluster):

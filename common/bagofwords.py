@@ -1,3 +1,4 @@
+from nbformat import read
 import numpy as np
 from sklearn import neighbors
 from sklearn.metrics import confusion_matrix,accuracy_score
@@ -10,6 +11,7 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
 
 import common.handler as handler
+import math
 
 
 def create_patch_clusters(descriptor_list, num_clusters):  
@@ -80,22 +82,26 @@ def trainBoW(descriptor_list, n_clusters, n_neighbors):
     handler.saveKNN(neighbors, scaler, clusters)
 
 
-def isLoopClosure(distance, min_distance):
-    return distance < min_distance
+def isLoopClosure(distance, max_distance):
+    return distance < max_distance
 
 
-def detectLoopClosures(descriptor_list, min_distance):
+def detectLoopClosures(descriptor_list, max_distance, max=100000):
     lcc = []
     for i in range(len(descriptor_list)):
         indices, distances = getSimilarBoW(descriptor_list[i])
         for index, distance in zip(indices, distances):
-            if index != i and isLoopClosure(distance, min_distance):
-                lcc.append([i, index])
-                # loop_closures[i] = True
+            if index != i and isLoopClosure(distance, max_distance):
+                if index < max:
+                    lcc.append([i, index])
+
     loop_closures = [False] * len(descriptor_list)
     loop_closure_frames = [-1] * len(descriptor_list)
-    lcc = cleanUpLCC(removeLCCDups(lcc))
+
+    lcc = removeCloseLCC(cleanUpLCC(removeLCCDups(lcc)))
+
     handler.saveLCC(lcc)
+
     for lc in lcc:
         loop_closures[lc[1]] = True
         loop_closure_frames[lc[1]] = lc[0]
@@ -124,5 +130,13 @@ def cleanUpLCC(lcc):
             res2.append(lc)
             last.append(lc[1])
     return res2
+
+def removeCloseLCC(lcc):
+    res = []
+    for lc in lcc:
+        if math.fabs(lc[0] - lc[1]) > 10:
+            res.append(lc)
+    return res
+
 def getLCC():
     return handler.readLCC()
