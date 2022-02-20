@@ -114,4 +114,4 @@ if __name__ == '__main__':
 
     print("\nRunning Superpoint")
 
-    bowh.run(sequence_folder, runSuperpoint, num_frames=100, training=False, detecting=True, max_distance=0.3)
+    bowh.run(sequence_folder, runSuperpoint, num_frames=100, training=False, detecting=True, max_distance=0.1)
