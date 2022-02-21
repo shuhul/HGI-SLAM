@@ -5,6 +5,15 @@ from cv2 import imread
 import cv2
 import pickle
 import numpy as np
+import matplotlib
+
+matplotlib.use('Agg')
+
+import matplotlib.pyplot as plt
+
+import shutil
+import math
+
 
 timestamps = []
 filenames = []
@@ -85,7 +94,20 @@ def showVideo():
         cv2.imshow('Video', cv2.imread(f'{sequence_folder}/{filename}', cv2.IMREAD_COLOR))
         if(cv2.waitKey(timestep) & 0xFF == ord('q')):
             break
-    cv2.destroyAllWindows() 
+    cv2.destroyAllWindows()
+
+def showTrajectory():
+    xs, zs = readKFT()
+    txs, tzs = readGT()
+    plt.plot(txs, tzs, color='black', linewidth=1.0)
+    plt.plot(xs, zs, color='red', linewidth=1.0)
+    plt.xlabel('x [m]')
+    plt.ylabel('y [m]')
+    plt.savefig('kft.png')
+    cv2.imshow('Trajectory', cv2.imread('kft.png', cv2.IMREAD_COLOR))
+    while True:
+        if(cv2.waitKey(0) & 0xFF == ord('q')):
+            break
 
 def saveCurrentIndex(index):
     global currentIndex
@@ -147,3 +169,40 @@ def saveLCC(lcc):
 def readLCC():
     lcc = open(f'{saved_folder}/lcc', 'rb')
     return pickle.load(lcc)
+
+def readKFT():
+    xs = []
+    zs = []
+    points = []
+    origin = (1.4, 1.7)
+    theta = np.deg2rad(-40)
+    scale = 0.6
+    shutil.copyfile('/root/ORB_SLAM2/Examples/Monocular/KeyFrameTrajectory.txt', f'{saved_folder}/trajectory.txt')
+    with open(f'{saved_folder}/trajectory.txt', 'r') as kftFile:
+        lines = kftFile.readlines()
+        for line in lines:
+            data = line.split(" ")
+            point = ((float(data[1])*scale)+ origin[0], (float(data[3])*scale)+origin[1])
+            x, z = rotate(origin, point, theta)
+            xs.append(x)
+            zs.append(z)
+    return xs, zs
+
+def readGT():
+    xs = []
+    zs = []
+    with open(f'{saved_folder}/groundtruth.txt', 'r') as kftFile:
+        lines = kftFile.readlines()
+        for line in lines:
+            data = line.split(" ")
+            xs.append(float(data[1]))
+            zs.append(float(data[3]))
+    return xs, zs
+
+
+def rotate(origin, point, angle):
+    ox, oy = origin
+    px, py = point
+    qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
+    qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
+    return qx, qy
