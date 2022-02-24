@@ -60,6 +60,14 @@ def getLoopClosureFrames(indices):
 def getFrame(index):
     return cv2.imread(f'{sequence_folder}/{filenames[index]}', cv2.IMREAD_COLOR)
 
+def getFrameNumber(timestamp):
+    for i in range(len(timestamps)):
+        print(timestamps[i][:-8])
+        print(timestamp[:-6])
+        if timestamps[i][:-8] == timestamp[:-6]:
+            return i
+    return 0
+
 def showFrame(frame):
     cv2.imshow('Frame', frame)
 
@@ -96,10 +104,13 @@ def showVideo():
             break
     cv2.destroyAllWindows()
 
-def showTrajectory():
+def showTrajectory(start=0, stop=-1, showGT = True):
     xs, zs = readKFT()
     txs, tzs = readGT()
-    plt.plot(txs, tzs, color='black', linewidth=1.0)
+    xs = xs[start:stop]
+    zs = zs[start:stop]
+    if showGT:
+        plt.plot(txs, tzs, color='black', linewidth=1.0)
     plt.plot(xs, zs, color='red', linewidth=1.0)
     plt.xlabel('x [m]')
     plt.ylabel('y [m]')
@@ -173,7 +184,6 @@ def readLCC():
 def readKFT():
     xs = []
     zs = []
-    points = []
     origin = (1.4, 1.7)
     theta = np.deg2rad(-40)
     scale = 0.6
