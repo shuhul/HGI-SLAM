@@ -1,4 +1,5 @@
 import bowhandler as bowh
+import bagofwords as bow
 import handler
 import argparse
 
@@ -13,6 +14,9 @@ if __name__ == "__main__":
     # handler.readFolder(sequence_folder, 'saved')
     # print(handler.getFrameNumber('1305031098.6659'))
     # print(handler.timestamps)
-    handler.showTrajectory(start=10, stop=20, showGT=True)
+    # handler.showTrajectory(start=10, stop=20, showGT=True)
+    loop_closure_connections = bow.getLCC()
+    handler.saveLoopClosures(loop_closure_connections)
+    print(loop_closure_connections)
     
     # bowh.combined(sequence_folder, num_frames=300, detecting=False, sup_weight=1, sal_weight=1, sim_threshold=1)

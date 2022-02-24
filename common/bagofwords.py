@@ -175,10 +175,7 @@ def detectCombinedLC(sup_weight, sal_weight, max_distance, max_frames=750):
             lcc.append([i , sup_indices[sup_min_index]])
 
     os.chdir('../common')
-
-    loop_closures = [False] * max_frames
-    loop_closure_frames = [-1] * max_frames
-
+    
     print(f'\nDetected {len(lcc)} loop closure canidates')
 
     lcc1 = removeLCCDups(lcc)
@@ -196,9 +193,4 @@ def detectCombinedLC(sup_weight, sal_weight, max_distance, max_frames=750):
     lcc = lcc3
 
     handler.saveLCC(lcc)
-
-    for lc in lcc:
-        loop_closures[lc[1]] = True
-        loop_closure_frames[lc[1]] = lc[0]
-
-    handler.saveLoopClosures(loop_closures, loop_closure_frames)
+    handler.saveLoopClosures(lcc)

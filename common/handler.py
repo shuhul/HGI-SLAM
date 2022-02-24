@@ -162,11 +162,16 @@ def readKNN():
     cluster = open(f'{saved_folder}/cluster_model', 'rb')
     return pickle.load(knnFile), pickle.load(scalerFile), pickle.load(cluster)
 
-def saveLoopClosures(loop_closures, loop_closure_frames):
-    with open(f'{saved_folder}/loop_closures.txt', 'w') as lcFile:
-        lcFile.write(str(loop_closures))
-    with open(f'{saved_folder}/loop_closure_frames.txt', 'w') as lciFile:
-        lciFile.write(str(loop_closure_frames))
+def saveLoopClosures(lcc):
+    lcpast = [lc[0] for lc in lcc]
+    lcnow =  [lc[1] for lc in lcc]
+    with open(f'{saved_folder}/lcpast.txt', 'w') as lcpFile:
+        lcpFile.write(str(lcpast))
+    with open(f'{saved_folder}/lcnow.txt', 'w') as lcnFile:
+        lcnFile.write(str(lcnow))
+    shutil.copyfile(f'{saved_folder}/lcpast.txt', '/root/ORB_SLAM2/Examples/Monocular/lcPast.txt')
+    shutil.copyfile(f'{saved_folder}/lcnow.txt', '/root/ORB_SLAM2/Examples/Monocular/lcNow.txt')
+    
 
 def readLoopClosures():
     with open(f'{saved_folder}/loop_closures.txt', 'r') as lcFile:
