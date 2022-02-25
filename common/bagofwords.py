@@ -106,7 +106,7 @@ def detectLoopClosures(descriptor_list, max_distance, max=100000):
     for lc in lcc:
         loop_closures[lc[1]] = True
         loop_closure_frames[lc[1]] = lc[0]
-    handler.saveLoopClosures(loop_closures, loop_closure_frames)
+    # handler.saveLoopClosures(loop_closures, loop_closure_frames)
                 
 def getLoopClosures():
     loop_closures = handler.readLoopClosures()
@@ -159,7 +159,7 @@ def detectCombinedLC(sup_weight, sal_weight, max_distance, max_frames=750):
     
 
     lcc = []
-    for i in range(max_frames):
+    for i in range(len(sup_desc)):
         os.chdir('../superpoint')
         sup_indices, sup_distances = getSimilarBoW(sup_desc[i])
         os.chdir('../salgan')

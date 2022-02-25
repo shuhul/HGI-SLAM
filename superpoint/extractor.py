@@ -64,7 +64,6 @@ def preprocess_image(image, img_size):
 
 def runSuperpoint(frames):
     if len(frames) == 0:
-        print(f'Skipping {handler.readCurrentIndex()} already processed frames')
         return []
     descriptor_list = []
     graph = tf.Graph()
@@ -90,6 +89,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser(description='Run superpoint on a image sequence')
     parser.add_argument('path_to_sequence', type=str)
+    parser.add_argument('num_imgs', type=int)
+    parser.add_argument('training', type=str)
     parser.add_argument('--weights_name', type=str, default="sp_v6", help='The weights for the model')
     parser.add_argument('--H', type=int, default=480,
                         help='The height in pixels to resize the images to. \
@@ -104,6 +105,8 @@ if __name__ == '__main__':
 
     weights_name = args.weights_name
     sequence_folder = args.path_to_sequence
+    num = args.num_imgs
+    train = True if args.training == "y" else False
     img_size = (args.W, args.H)
     keep_k_best = args.k_best
 
@@ -112,6 +115,8 @@ if __name__ == '__main__':
     weights_root_dir.mkdir(parents=True, exist_ok=True)
     weights_dir = Path(weights_root_dir, weights_name)
 
+    os.chdir("/root/HGI_SLAM/superpoint")
+
     print("\nRunning Superpoint")
 
-    bowh.run(sequence_folder, runSuperpoint, num_frames=300, training=False, detecting=False, max_distance=0.1)
+    bowh.run(sequence_folder, runSuperpoint, max_frame=num, training=train, detecting=True, max_distance=0.1)

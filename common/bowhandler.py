@@ -3,23 +3,37 @@ import common.bagofwords as bow
 
 
 
-def run(sequence_folder, featureExtractor, num_frames=750, training=True, num_clusters=3, num_neighbors=3, detecting=True, max_distance=1):
-
-    saved_folder = 'saved'
+def run(sequence_folder, featureExtractor, max_frame=750, training=True, num_clusters=3, num_neighbors=3, detecting=True, max_distance=1):
 
     print('\n-------Generating Descriptors--------\n')
 
-    handler.readFolder(sequence_folder, saved_folder) 
+    handler.readFolder(sequence_folder) 
 
-    filenames, new_frames = handler.getNewFrames(last=num_frames)
+    descriptor_list = handler.readDescriptors()
 
-    descriptor_list = handler.readDescriptors(max=num_frames) + featureExtractor(new_frames)
+    print(f'Starting of descriptors: {len(descriptor_list)}')
 
-    if len(descriptor_list) > num_frames and len(new_frames) != 0:
-        print('Saving new descriptors')
-        handler.saveDescriptors(descriptor_list)
+    skip = 4
+
+    batch_size = 5
+
+    num_frames = int(max_frame/skip)
+
+    if handler.readCurrentIndex() >= max_frame:
+        print(f'Skipping {handler.readCurrentIndex()} already processed frames')
+    else:
+        for i in range(int(num_frames/batch_size)):
+            filenames, new_frames, last = handler.getNewFrames(last=(i+1)*batch_size*skip, skip=skip)
+            descriptor_list = handler.readDescriptors(max=i*batch_size) + featureExtractor(new_frames)
+            if len(descriptor_list) >= (batch_size) and len(new_frames) != 0:
+                print(f'Saving new descriptors for batch: {i+1} of {int(num_frames/batch_size)}')
+                handler.saveDescriptors(descriptor_list)
+                handler.saveCurrentIndex(last)
+        
     
-    print(f'Number of descriptors: {len(descriptor_list)}')
+    descriptor_list = handler.readDescriptors()
+
+    print(f'Ending number of descriptors: {len(descriptor_list)}')
 
     print('\n-------Computing Bag Of Words--------\n')
 
@@ -28,27 +42,27 @@ def run(sequence_folder, featureExtractor, num_frames=750, training=True, num_cl
     else:
         print('Skipping already computed BoW model')
 
-    print('\n-------Detecting Loop Closures--------\n')
+    # print('\n-------Detecting Loop Closures--------\n')
     
-    if detecting:
-        bow.detectLoopClosures(descriptor_list, max_distance, max=num_frames)
-    else:
-        print('Skipping already detected loop closures')
+    # if detecting:
+    #     bow.detectLoopClosures(descriptor_list, max_distance, max=num_frames)
+    # else:
+    #     print('Skipping already detected loop closures')
 
-    loop_closure_indices = bow.getLoopClosures()
+    # loop_closure_indices = bow.getLoopClosures()
     
-    loop_closure_connections = bow.getLCC()
+    # loop_closure_connections = bow.getLCC()
 
-    print(f'\n-------Detected {len(loop_closure_indices)} loop closures--------\n')
+    # print(f'\n-------Detected {len(loop_closure_indices)} loop closures--------\n')
 
-    if len(loop_closure_indices) != 0:
+    # if len(loop_closure_indices) != 0:
 
-        print(f'Detected loop closures between indices {loop_closure_connections}\n')
+    #     print(f'Detected loop closures between indices {loop_closure_connections}\n')
 
-        handler.showLoopClosurePairs(loop_closure_connections)
+    #     # handler.showLoopClosurePairs(loop_closure_connections)
 
-    else:
-        print('No loop closures found')
+    # else:
+    #     print('No loop closures found')
 
 
 def combined(sequence_folder, num_frames=750, detecting=True, sup_weight=1, sal_weight=1, sim_threshold=1):

@@ -13,20 +13,23 @@ import matplotlib.pyplot as plt
 
 import shutil
 import math
+import os
 
 
 timestamps = []
 filenames = []
-images = []
 sequence_folder = '/root/ORB_FR1'
 saved_folder = 'saved'
 
 currentIndex = 0
 
-def readFolder(folder, saved):
+def readFolder(folder):
     global sequence_folder, saved_folder
     sequence_folder = folder
-    saved_folder = saved
+    saved_folder = sequence_folder[6:]
+    doesSavedExist = os.path.exists(saved_folder)
+    if not doesSavedExist:
+        os.makedirs(saved_folder)
     with open(f'{sequence_folder}/rgb.txt') as f:
         lines = f.readlines()
         for line in lines[3:]:
@@ -35,15 +38,19 @@ def readFolder(folder, saved):
     
     
 
-def getNewFrames(last=len(filenames),shouldsave=True):
+def getNewFrames(last=len(filenames),skip=4):
+    global currentIndex
+    images = []
+    if last == -1:
+        last=len(filenames)
     readCurrentIndex()
     if last <= currentIndex:
-        return [], []
-    for filename in filenames[currentIndex:last]:
+        return [], [], last
+    files = filenames[currentIndex:last:skip]
+    for filename in files:
         images.append(cv2.imread(f'{sequence_folder}/{filename}', cv2.IMREAD_COLOR))
-    if shouldsave:
-        saveCurrentIndex(last)
-    return filenames[currentIndex:last], images
+
+    return files, images, last
 
 def getAllFrames(last=len(filenames)):
     imgs = []
@@ -78,10 +85,12 @@ def showLoopClosures(frames):
         if (cv2.waitKey(1000) & 0xFF == ord('n')):
             i+=1
 
-def showLoopClosurePairs(lcc):
+def showLoopClosurePairs(lcc, skip=4):
     i = 0
     while i < len(lcc):
         pair = lcc[i]
+        pair[0] *= skip
+        pair[1] *= skip
         img1 = getFrame(pair[0])
         img2 = getFrame(pair[1])
         combined = np.hstack((img1, img2))
@@ -96,10 +105,13 @@ def showLoopClosurePairs(lcc):
         if (out & 0xFF) == ord('q'):
             break
 
-def showVideo():
+def showVideo(skip=4):
     timestep = int((30.9/len(filenames))*1000)
-    for filename in filenames:
-        cv2.imshow('Video', cv2.imread(f'{sequence_folder}/{filename}', cv2.IMREAD_COLOR))
+    for filename in filenames[::skip]:
+        name = 'Video'
+        cv2.namedWindow(name, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(name, 640, 480)
+        cv2.imshow(name, cv2.imread(f'{sequence_folder}/{filename}', cv2.IMREAD_COLOR))
         if(cv2.waitKey(timestep) & 0xFF == ord('q')):
             break
     cv2.destroyAllWindows()
@@ -149,6 +161,7 @@ def showTrajectory(showGT = True, showB = False, showLC = True):
 
 def col(r, g, b, a):
     return list(np.array([r, g, b, a*255])/255)
+
 def saveCurrentIndex(index):
     global currentIndex
     currentIndex = index
@@ -158,6 +171,9 @@ def saveCurrentIndex(index):
 
 def readCurrentIndex():
     global currentIndex
+    if not os.path.exists(f'{saved_folder}/currentIndex.txt'):
+        with open(f'{saved_folder}/currentIndex.txt', 'a+') as newIndexFile:
+            newIndexFile.write(str(0))
     with open(f'{saved_folder}/currentIndex.txt', 'r') as indexFile: 
         currentIndex = int(indexFile.read())
     return currentIndex
@@ -169,12 +185,16 @@ def saveDescriptors(descriptor_list):
 
 
 def readDescriptors(max=100000):
-    infile = open(f'{saved_folder}/descriptor_list.obj', 'rb')
-    desc_list = pickle.load(infile)
-    if len(desc_list) < max:
-        return desc_list
+
+    if os.path.exists(f'{saved_folder}/descriptor_list.obj'):
+        infile = open(f'{saved_folder}/descriptor_list.obj', 'rb')
+        desc_list = pickle.load(infile)
+        if len(desc_list) < max:
+            return desc_list
+        else:
+            return desc_list[:max]
     else:
-        return desc_list[:max]
+        return []
 
 
 def saveKNN(KNN, scaler, cluster):

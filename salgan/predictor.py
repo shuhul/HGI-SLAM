@@ -47,7 +47,7 @@ def extractHeatmap(img, model):
 
 def runSalgan(frames):
     if len(frames) == 0:
-        print(f'Skipping {handler.readCurrentIndex()} already processed frames')
+        # print(f'Skipping {handler.readCurrentIndex()} already processed frames')
         return []
     descriptor_list = []
 
@@ -94,10 +94,13 @@ def runSalgan(frames):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser = argparse.ArgumentParser(description='Run superpoint on a image sequence')
+    parser = argparse.ArgumentParser(description='Run salgan on a image sequence')
     parser.add_argument('path_to_sequence', type=str)
+    parser.add_argument('num_imgs', type=int)
+    parser.add_argument('training', type=str)
     args = parser.parse_args()
 
     sequence_folder = args.path_to_sequence
-
-    bowh.run(sequence_folder, runSalgan, num_frames=300, training=False, num_clusters=8, num_neighbors=5, detecting=False, max_distance=1.2)
+    num = args.num_imgs
+    train = True if args.training == "y" else False
+    bowh.run(sequence_folder, runSalgan, max_frame=num, training=train, num_clusters=8, num_neighbors=5, detecting=False, max_distance=1.2)
