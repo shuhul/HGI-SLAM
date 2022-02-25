@@ -11,7 +11,7 @@ if __name__ == "__main__":
 
     sequence_folder = args.path_to_sequence
 
-    handler.showTrajectory(start=0, stop=-1, showGT=True)
+    handler.showTrajectory(start=0, stop=-1, showGT=False, showB=True)
 
     # handler.readFolder(sequence_folder, 'saved')
     # print(handler.getFrameNumber('1305031098.6659'))
