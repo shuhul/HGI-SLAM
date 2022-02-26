@@ -23,6 +23,12 @@ import pickle
 from superpoint.settings import EXPER_PATH
 
 weights_dir = ""
+sequence_folder = ""
+num = 0
+all_keypoints = []
+train = ""
+img_size = (0,0)
+keep_k_best = 0
 
 def extract_superpoint_keypoints_and_descriptors(keypoint_map, descriptor_map,
                                                  keep_k_points=1000):
@@ -63,6 +69,7 @@ def preprocess_image(image, img_size):
     return img_preprocessed, img_orig
 
 def runSuperpoint(frames):
+    global all_keypoints
     if len(frames) == 0:
         return []
     descriptor_list = []
@@ -81,34 +88,18 @@ def runSuperpoint(frames):
             keypoint_map = np.squeeze(out[0])
             descriptor_map = np.squeeze(out[1])
             keypoints, descriptor = extract_superpoint_keypoints_and_descriptors(keypoint_map, descriptor_map, keep_k_best)
+            all_keypoints.append(keypoints)
             descriptor_list.append(descriptor)
             count += 1
         return descriptor_list
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser = argparse.ArgumentParser(description='Run superpoint on a image sequence')
-    parser.add_argument('path_to_sequence', type=str)
-    parser.add_argument('num_imgs', type=int)
-    parser.add_argument('training', type=str)
-    parser.add_argument('--weights_name', type=str, default="sp_v6", help='The weights for the model')
-    parser.add_argument('--H', type=int, default=480,
-                        help='The height in pixels to resize the images to. \
-                                (default: 480)')
-    parser.add_argument('--W', type=int, default=640,
-                        help='The width in pixels to resize the images to. \
-                                (default: 640)')
-    parser.add_argument('--k_best', type=int, default=1000,
-                        help='Maximum number of keypoints to keep \
-                        (default: 1000)')
-    args = parser.parse_args()
 
-    weights_name = args.weights_name
-    sequence_folder = args.path_to_sequence
-    num = args.num_imgs
-    train = True if args.training == "y" else False
-    img_size = (args.W, args.H)
-    keep_k_best = args.k_best
+def start():
+    global weights_dir, sequence_folder, num, train, img_size, keep_k_best
+
+    weights_name = "sp_v6"
+    img_size = (640, 480)
+    keep_k_best = 1000
 
     
     weights_root_dir = Path(EXPER_PATH, 'saved_models')
@@ -116,6 +107,21 @@ if __name__ == '__main__':
     weights_dir = Path(weights_root_dir, weights_name)
 
     os.chdir("/root/HGI_SLAM/superpoint")
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Run superpoint on a image sequence')
+    parser.add_argument('path_to_sequence', type=str)
+    parser.add_argument('num_imgs', type=int)
+    parser.add_argument('training', type=str)
+    args = parser.parse_args()
+
+    sequence_folder = args.path_to_sequence
+    num = args.num_imgs
+    train = True if args.training == "y" else False
+
+    start()
 
     print("\nRunning Superpoint")
 

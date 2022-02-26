@@ -270,3 +270,21 @@ def rotate(origin, point, angle):
     qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
     qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
     return qx, qy
+
+
+def showKeyPoints(image, keypoints):
+    name = 'keypoints'
+
+    cv2.namedWindow(name, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(name, 640*2, 480)
+
+    if not os.path.exists(f'{name}.png'):
+        for keypoint in keypoints:
+            cv2.circle(image, (int(keypoint.pt[0]), int(keypoint.pt[1])), radius=1, color=(0,255,0), thickness=2)
+    
+    cv2.imshow(name, image)
+    while True:
+        if(cv2.waitKey(0) & 0xFF == ord('q')):
+            break
+
+    cv2.imwrite(f'{name}.png', image)

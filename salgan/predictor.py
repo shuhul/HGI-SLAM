@@ -17,6 +17,8 @@ import matplotlib.pyplot as plt
 import common.bowhandler as bowh
 
 
+all_keypoints = []
+
 def preprocess_image(image, img_size):
     img = cv2.resize(image, img_size, interpolation=cv2.INTER_AREA)
     img_orig = img.copy()
@@ -46,6 +48,8 @@ def extractHeatmap(img, model):
 
 
 def runSalgan(frames):
+    global all_keypoints
+
     if len(frames) == 0:
         # print(f'Skipping {handler.readCurrentIndex()} already processed frames')
         return []
@@ -67,6 +71,7 @@ def runSalgan(frames):
         # descriptor = generator.generateDescriptors(img_gs, keypoints)
 
         keypoints, descriptor = generator.generateKeypointsAndDescriptors(img_gs, heatmap)
+        all_keypoints.append(keypoints)
 
         # print("\nDescriptor from SALGAN\n")
         # print(descriptor[0])
@@ -92,6 +97,9 @@ def runSalgan(frames):
     return descriptor_list
 
 
+def start():
+    os.chdir("/root/HGI_SLAM/salgan")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser(description='Run salgan on a image sequence')
@@ -100,7 +108,7 @@ if __name__ == "__main__":
     parser.add_argument('training', type=str)
     args = parser.parse_args()
 
-    os.chdir("/root/HGI_SLAM/salgan")
+    start()
 
     sequence_folder = args.path_to_sequence
     num = args.num_imgs
