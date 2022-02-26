@@ -10,3 +10,5 @@ export NUM_IMGS=600
 python3 /root/HGI_SLAM/superpoint/extractor.py $TESTING_DATASET_PATH $NUM_IMGS "n"
 python3 /root/HGI_SLAM/salgan/predictor.py $TESTING_DATASET_PATH $NUM_IMGS "n"
 python3 /root/HGI_SLAM/common/combined.py $TESTING_DATASET_PATH $NUM_IMGS 0.8 "n"
+/root/HGI_SLAM/orbslam/orbslam2.sh $TESTING_DATASET_PATH $NUM_IMGS "n"
+python3 /root/HGI_SLAM/common/end.py $TESTING_DATASET_PATH "n"

@@ -69,14 +69,14 @@ def combined(sequence_folder, num_frames=750, detecting=True, sup_weight=1, sal_
 
     distance_threshold = 1/sim_threshold
 
-    saved_folder = 'saved'
+    skip = 4
 
     handler.readFolder(sequence_folder) 
 
     print('\n-------Detecting Loop Closures--------\n')
 
     if detecting:
-        bow.detectCombinedLC(sup_weight, sal_weight, distance_threshold, max_frames=num_frames)
+        bow.detectCombinedLC(sup_weight, sal_weight, distance_threshold, max_frames=num_frames, skip=skip)
     else:
         print('Skipping already detected loop closures')
     
@@ -89,7 +89,8 @@ def combined(sequence_folder, num_frames=750, detecting=True, sup_weight=1, sal_
 
         print(f'Detected loop closures between indices {loop_closure_connections}\n')
 
-        handler.showLoopClosurePairs(loop_closure_connections)
+        if detecting:
+            handler.showLoopClosurePairs(loop_closure_connections)
 
     else:
         print('No loop closures found')

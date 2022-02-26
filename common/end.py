@@ -7,16 +7,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser(description='Run HGI on a image sequence')
     parser.add_argument('path_to_sequence', type=str)
+    parser.add_argument('training', type=str)
     args = parser.parse_args()
 
     sequence_folder = args.path_to_sequence
-    # handler.showTrajectory(showGT=True, showB=True, showLC=True)
-
-    # handler.readFolder(sequence_folder, 'saved')
-    # print(handler.getFrameNumber('1305031098.6659'))
-    # print(handler.timestamps)
-    # loop_closure_connections = bow.getLCC()
-    # handler.saveLoopClosures(loop_closure_connections)
-    # print(loop_closure_connections)
-    
-    # bowh.combined(sequence_folder, num_frames=300, detecting=False, sup_weight=1, sal_weight=1, sim_threshold=1)
+    train = True if args.training == "y" else False
+    handler.readFolder(sequence_folder)
+    handler.showTrajectory(showGT=True, create=train)

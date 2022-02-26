@@ -23,6 +23,11 @@ saved_folder = 'saved'
 
 currentIndex = 0
 
+origin = (1.4, 1.7)
+theta = np.deg2rad(-40)
+scale = 0.6
+    
+
 def readFolder(folder):
     global sequence_folder, saved_folder
     sequence_folder = folder
@@ -85,12 +90,10 @@ def showLoopClosures(frames):
         if (cv2.waitKey(1000) & 0xFF == ord('n')):
             i+=1
 
-def showLoopClosurePairs(lcc, skip=4):
+def showLoopClosurePairs(lcc):
     i = 0
     while i < len(lcc):
         pair = lcc[i]
-        pair[0] *= skip
-        pair[1] *= skip
         img1 = getFrame(pair[0])
         img2 = getFrame(pair[1])
         combined = np.hstack((img1, img2))
@@ -116,51 +119,66 @@ def showVideo(skip=4):
             break
     cv2.destroyAllWindows()
 
-def showTrajectory(showGT = True, showB = False, showLC = True):
-    bxs, bzs = readKFT('before')
-    axs, azs = readKFT('after')
-    txs, tzs = readGT()
+def showTrajectory(showGT = True, create = False):
+    global origin, theta, scale
 
-    lcInd = len(bxs)-3
-    if showLC:
-        axs = axs[lcInd:-1]
-        azs = azs[lcInd:-1]
-        lcxs = [bxs[-1],axs[0]]
-        lczs = [bzs[-1],azs[0]]
-        shaxs = list(np.array(axs) + (lcxs[0]-axs[0]))
-        shazs = list(np.array(azs) + (lczs[0]-azs[0]))
+    if create:
+        print("\nComputing trajectory\n")
+        black = col(33,41,48, 0.7)
+        lightblue = col(0, 53, 178, 0.8)
+        red = col(220, 32, 52, 0.9)
+        green = col(11, 68, 31, 0.95)
 
-    black = col(33,41,48, 0.7)
-    lightblue = col(0, 53, 178, 0.8)
-    red = col(220, 32, 52, 0.9)
-    lightred = col(220, 32, 52, 0.5)
-    green = col(11, 68, 31, 0.95)
 
-    if showGT:
-        plt.plot(txs, tzs, color=black, linewidth=1.0)
-    if showB:
-        plt.plot(bxs, bzs, color=lightblue, linewidth=2.0)
+        txs, tzs = readGT()
+        if showGT:
+            plt.plot(txs, tzs, color=black, linewidth=1.0)
 
-    plt.plot(axs, azs, color=red, linewidth=2.0)
+        num = copyKFT()
 
-    if showLC:
-        plt.plot(shaxs, shazs, color=lightred , linewidth=2.0)
-        plt.plot(lcxs, lczs, color=green, linewidth=3.0)
+        offset = (-0.1,-0.3)
+        origin = (txs[0]+offset[0], tzs[0]+offset[1])
+        theta = np.deg2rad(130)
+        scale = 0.95
+
+        axs, azs = readKFT('after')
         
-    
-    plt.xlabel('x [m]')
-    plt.ylabel('y [m]')
-    plt.savefig('kft.png')
-    name = 'HGI-SLAM Trajectory'
+        lcInd = 0
+        for i in range(1,num):
+            bxs, bzs = readKFT(f'before{i}')
+            plt.plot(bxs[lcInd:], bzs[lcInd:], color=wcol(red, lightblue, ((i-1)/(num-1))), linewidth=2.0)
+            lcInd = len(bxs)
+            if i < num-1:
+                bxs1, bzs1 = readKFT(f'before{i+1}')
+                lcxs = [bxs[-1],bxs1[lcInd]]
+                lczs = [bzs[-1],bzs1[lcInd]]
+                plt.plot(lcxs, lczs, color=green, linewidth=3.0)
+            else:
+                lcxs = [bxs[-1],axs[lcInd]]
+                lczs = [bzs[-1],azs[lcInd]]
+                plt.plot(lcxs, lczs, color=green, linewidth=3.0)
+        plt.plot(axs[lcInd:], azs[lcInd:], color=red, linewidth=2.0)
+            
+        
+        plt.xlabel('x [m]')
+        plt.ylabel('y [m]')
+        plt.savefig(f'{saved_folder}/kft.png')
+    else:
+        print("\nSkipping already computed trajectory\n")
+    print(f"Displaying HGI-SLAM Trajectory for {saved_folder}\n")
+    name = f'HGI-SLAM Trajectory'
     cv2.namedWindow(name, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(name, 640, 560)
-    cv2.imshow(name, cv2.imread('kft.png', cv2.IMREAD_COLOR))
+    cv2.imshow(name, cv2.imread(f'{saved_folder}/kft.png', cv2.IMREAD_COLOR))
     while True:
         if(cv2.waitKey(0) & 0xFF == ord('q')):
             break
 
 def col(r, g, b, a):
     return list(np.array([r, g, b, a*255])/255)
+
+def wcol(col1, col2, w):
+    return list(((w)*np.array(col1))+((1-w)*np.array(col2)))
 
 def saveCurrentIndex(index):
     global currentIndex
@@ -235,32 +253,41 @@ def readLCC():
     lcc = open(f'{saved_folder}/lcc', 'rb')
     return pickle.load(lcc)
 
+def copyKFT():
+    i = 1
+    while os.path.exists(f'/root/ORB_SLAM2/Examples/Monocular/before{i}.txt'):
+        shutil.copyfile(f'/root/ORB_SLAM2/Examples/Monocular/before{i}.txt', f'{saved_folder}/before{i}.txt')
+        i+=1
+    shutil.copyfile(f'/root/ORB_SLAM2/Examples/Monocular/after.txt', f'{saved_folder}/after.txt')
+
+    return i
+
 def readKFT(filename):
+    global origin, theta, scale
     xs = []
     zs = []
-    origin = (1.4, 1.7)
-    theta = np.deg2rad(-40)
-    scale = 0.6
-    shutil.copyfile(f'/root/ORB_SLAM2/Examples/Monocular/{filename}.txt', f'{saved_folder}/{filename}.txt')
     with open(f'{saved_folder}/{filename}.txt', 'r') as kftFile:
         lines = kftFile.readlines()
+        data1 = lines[0].split(" ")
+        point1 = ((-float(data1[1])*scale), (float(data1[3]))*scale)
         for line in lines:
             data = line.split(" ")
-            point = ((float(data[1])*scale)+ origin[0], (float(data[3])*scale)+origin[1])
-            x, z = rotate(origin, point, theta)
-            xs.append(x)
-            zs.append(z)
+            point = ((-float(data[1]))*scale, (float(data[3]))*scale)
+            x, z = rotate(point1, point, theta)
+            xs.append(x+origin[0]-point1[0])
+            zs.append(z+origin[1]-point1[1])
     return xs, zs
 
 def readGT():
     xs = []
     zs = []
-    with open(f'{saved_folder}/groundtruth.txt', 'r') as kftFile:
+    with open(f'{sequence_folder}/groundtruth.txt', 'r') as kftFile:
         lines = kftFile.readlines()
-        for line in lines:
-            data = line.split(" ")
-            xs.append(float(data[1]))
-            zs.append(float(data[3]))
+        for i in range(len(lines)):
+            if i > 2:
+                data = lines[i].split(" ")
+                xs.append(float(data[1]))
+                zs.append(float(data[3]))
     return xs, zs
 
 
