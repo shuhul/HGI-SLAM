@@ -100,6 +100,8 @@ if __name__ == "__main__":
     parser.add_argument('training', type=str)
     args = parser.parse_args()
 
+    os.chdir("/root/HGI_SLAM/salgan")
+
     sequence_folder = args.path_to_sequence
     num = args.num_imgs
     train = True if args.training == "y" else False

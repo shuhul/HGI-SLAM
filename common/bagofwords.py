@@ -170,7 +170,7 @@ def detectCombinedLC(sup_weight, sal_weight, max_distance, max_frames=750):
         sal_avg = np.average(sal_distances[1:])
         distance = ((sup_min*10.0*sup_weight) + (sal_avg*0.833*sal_weight))/(sup_weight+sal_weight)
         isLc = isLoopClosure(distance, max_distance) and sup_indices[sup_min_index] < max_frames
-        print(f'Processing frame {i} distance: {round(distance,3)} candidate: {isLc}')
+        print(f'Processing frame {i} Similarity: {round(1/distance,3)} Candidate: {isLc}')
         if isLc:
             lcc.append([i , sup_indices[sup_min_index]])
 

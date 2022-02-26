@@ -11,7 +11,7 @@ def run(sequence_folder, featureExtractor, max_frame=750, training=True, num_clu
 
     descriptor_list = handler.readDescriptors()
 
-    print(f'Starting of descriptors: {len(descriptor_list)}')
+    print(f'Starting number of descriptors: {len(descriptor_list)}')
 
     skip = 4
 
@@ -71,7 +71,7 @@ def combined(sequence_folder, num_frames=750, detecting=True, sup_weight=1, sal_
 
     saved_folder = 'saved'
 
-    handler.readFolder(sequence_folder, saved_folder) 
+    handler.readFolder(sequence_folder) 
 
     print('\n-------Detecting Loop Closures--------\n')
 
@@ -80,13 +80,12 @@ def combined(sequence_folder, num_frames=750, detecting=True, sup_weight=1, sal_
     else:
         print('Skipping already detected loop closures')
     
-    loop_closure_indices = bow.getLoopClosures()
     
     loop_closure_connections = bow.getLCC()
     
-    print(f'\n-------Detected {len(loop_closure_indices)} loop closures--------\n')
+    print(f'\n-------Detected {len(loop_closure_connections)} loop closures--------\n')
 
-    if len(loop_closure_indices) != 0:
+    if len(loop_closure_connections) != 0:
 
         print(f'Detected loop closures between indices {loop_closure_connections}\n')
 
