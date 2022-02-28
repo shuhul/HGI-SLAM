@@ -35,11 +35,18 @@ def readFolder(folder):
     doesSavedExist = os.path.exists(saved_folder)
     if not doesSavedExist:
         os.makedirs(saved_folder)
-    with open(f'{sequence_folder}/rgb.txt') as f:
-        lines = f.readlines()
-        for line in lines[3:]:
-            timestamps.append(line.split()[0])
-            filenames.append(line.split()[1])
+    if os.path.exists(f'{sequence_folder}/rgb.txt'):
+        with open(f'{sequence_folder}/rgb.txt') as f:
+            lines = f.readlines()
+            for line in lines[3:]:
+                timestamps.append(line.split()[0])
+                filenames.append(line.split()[1])
+    else:
+        with open(f'{sequence_folder}/times.txt') as f:
+            lines = f.readlines()
+            for i in range(len(lines)):
+                timestamps.append(float(lines[i]))
+                filenames.append(f'image_0/{str(i).zfill(6)}.png')
     
     
 
@@ -100,6 +107,7 @@ def showLoopClosurePairs(lcc):
         name = f'Loop Closure between frame {pair[0]} and {pair[1]} '
         cv2.namedWindow(name, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(name, 640*2, 480)
+        combined = cv2.resize(combined, (640*2,480))
         cv2.imshow(name, combined)
         out = cv2.waitKey(0)
         if (out & 0xFF) == ord('n'):
@@ -119,7 +127,7 @@ def showVideo(skip=4):
             break
     cv2.destroyAllWindows()
 
-def showTrajectory(showGT = True, create = False):
+def showTrajectory(showGT = True, showLC=False, create = False):
     global origin, theta, scale
 
     if create:
@@ -137,26 +145,33 @@ def showTrajectory(showGT = True, create = False):
         num = copyKFT()
 
         offset = (-0.1,-0.3)
-        origin = (txs[0]+offset[0], tzs[0]+offset[1])
         theta = np.deg2rad(130)
         scale = 0.95
 
+        offset = (0,0)
+        theta = np.deg2rad(0)
+        scale = 1
+
+        origin = (txs[0]+offset[0], tzs[0]+offset[1])
+
         axs, azs = readKFT('after')
-        
+    
         lcInd = 0
-        for i in range(1,num):
-            bxs, bzs = readKFT(f'before{i}')
-            plt.plot(bxs[lcInd:], bzs[lcInd:], color=wcol(red, lightblue, ((i-1)/(num-1))), linewidth=2.0)
-            lcInd = len(bxs)
-            if i < num-1:
-                bxs1, bzs1 = readKFT(f'before{i+1}')
-                lcxs = [bxs[-1],bxs1[lcInd]]
-                lczs = [bzs[-1],bzs1[lcInd]]
-                plt.plot(lcxs, lczs, color=green, linewidth=3.0)
-            else:
-                lcxs = [bxs[-1],axs[lcInd]]
-                lczs = [bzs[-1],azs[lcInd]]
-                plt.plot(lcxs, lczs, color=green, linewidth=3.0)
+        if showLC:
+            for i in range(1,num):
+                bxs, bzs = readKFT(f'before{i}')
+                plt.plot(bxs[lcInd:], bzs[lcInd:], color=wcol(red, lightblue, ((i-1)/(num-1))), linewidth=2.0)
+                lcInd = len(bxs)
+                if i < num-1:
+                    bxs1, bzs1 = readKFT(f'before{i+1}')
+                    lcxs = [bxs[-1],bxs1[lcInd]]
+                    lczs = [bzs[-1],bzs1[lcInd]]
+                    plt.plot(lcxs, lczs, color=green, linewidth=3.0)
+                else:
+                    lcxs = [bxs[-1],axs[lcInd]]
+                    lczs = [bzs[-1],azs[lcInd]]
+                    plt.plot(lcxs, lczs, color=green, linewidth=3.0)
+
         plt.plot(axs[lcInd:], azs[lcInd:], color=red, linewidth=2.0)
             
         

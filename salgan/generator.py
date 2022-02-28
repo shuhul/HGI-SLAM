@@ -19,7 +19,7 @@ keypoints = []
 num_sel = 0
 
 
-def generateKeypoints(image_gs, heatmap, num_points=1000):
+def generateKeypoints(image_gs, heatmap, num_points=300):
     global s_smooth, g_ths, has_selected, keypoints, num_sel, total_weight
     keypoints = []
     grad_image, oren_image = computeGradients(image_gs)

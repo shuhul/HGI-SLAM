@@ -11,6 +11,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     sequence_folder = args.path_to_sequence
-    train = True if args.training == "y" else False
+    showLC = args.training == "y"
+    train = True if args.training == "m" or showLC else False
     handler.readFolder(sequence_folder)
-    handler.showTrajectory(showGT=True, create=train)
+    handler.showTrajectory(showGT=True, showLC=showLC, create=train)

@@ -2,8 +2,10 @@ import common.handler as handler
 import common.bagofwords as bow
 
 
+skip = 20
 
 def run(sequence_folder, featureExtractor, max_frame=750, training=True, num_clusters=3, num_neighbors=3, detecting=True, max_distance=1):
+    global skip
 
     print('\n-------Generating Descriptors--------\n')
 
@@ -12,8 +14,6 @@ def run(sequence_folder, featureExtractor, max_frame=750, training=True, num_clu
     descriptor_list = handler.readDescriptors()
 
     print(f'Starting number of descriptors: {len(descriptor_list)}')
-
-    skip = 4
 
     batch_size = 5
 
@@ -65,11 +65,11 @@ def run(sequence_folder, featureExtractor, max_frame=750, training=True, num_clu
     #     print('No loop closures found')
 
 
-def combined(sequence_folder, num_frames=750, detecting=True, sup_weight=1, sal_weight=1, sim_threshold=1):
+def combined(sequence_folder, num_frames=750, detecting=True, showLC=False, sup_weight=1, sal_weight=1, sim_threshold=1):
+    global skip
 
     distance_threshold = 1/sim_threshold
 
-    skip = 4
 
     handler.readFolder(sequence_folder) 
 
@@ -89,7 +89,7 @@ def combined(sequence_folder, num_frames=750, detecting=True, sup_weight=1, sal_
 
         print(f'Detected loop closures between indices {loop_closure_connections}\n')
 
-        if detecting:
+        if showLC:
             handler.showLoopClosurePairs(loop_closure_connections)
 
     else:

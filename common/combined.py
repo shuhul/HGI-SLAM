@@ -16,5 +16,6 @@ if __name__ == "__main__":
     num = args.num_imgs
     train = True if args.training == "y" else False
     thresh = args.thresh
+    showLC = args.training == "m" or train
     
-    bowh.combined(sequence_folder, num_frames=num, detecting=train, sup_weight=1, sal_weight=1, sim_threshold=thresh)
+    bowh.combined(sequence_folder, num_frames=num, detecting=train,showLC=showLC, sup_weight=1, sal_weight=1, sim_threshold=thresh)

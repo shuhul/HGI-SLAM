@@ -5,4 +5,4 @@ cmake ..
 make
 cd ..
 cd Examples/Monocular/
-./mono_tum ../../Vocabulary/ORBvoc.txt TUM1.yaml $1 $2 $3
+./mono_tum ../../Vocabulary/ORBvoc.txt TUM3.yaml $1 $2 $3
