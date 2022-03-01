@@ -138,10 +138,10 @@ def showTrajectory(showGT = True, showLC=False, create = False):
     if create:
         print("\nComputing trajectory\n")
         black = col(33,41,48, 0.7)
-        lightblue = col(0, 53, 178, 0.8)
-        red = col(220, 32, 52, 0.9)
-        orange = col(255,165,0, 0.9)
-        green = col(11, 68, 31, 0.95)
+        lightblue = col(0, 53, 178, 1.0)
+        red = col(220, 32, 52, 1.0)
+        orange = col(255,165,0, 1.0)
+        green = col(11, 68, 31, 1.0)
 
         editGT = True
         if editGT:
@@ -152,19 +152,26 @@ def showTrajectory(showGT = True, showLC=False, create = False):
 
         # index = int(0.43*len(txs))
 
-        orb_x, orb_y = getPointAt(txs, tzs, 0.95)
-        sal_x, sal_y = getPointAt(txs, tzs, 0.99)
-        sup_x, sup_y = getPointAt(txs, tzs, 0.882)
-        hgi_x, hgi_y = getPointAt(txs, tzs, 0.97)
+        orb_x, orb_y = getPointAt(txs, tzs, 0.99)
+        sal_x, sal_y = getPointAt(txs, tzs, 0.882)
+        # sup_x, sup_y = getPointAt(txs, tzs, 0.882)
+        sup_x_2, sup_y_2 = getPointAt(txs, tzs, 0.99, 0.05)
+        hgi_x, hgi_y = getPointAt(txs, tzs, 0.95)
+        hgi_x_2, hgi_y_2 = getPointAt(txs, tzs, 0.882, 0.05)
+        hgi_x_3, hgi_y_3 = getPointAt(txs, tzs, 0.99, 0.1)
+
 
         if showGT:
             plt.plot(txs, tzs, color=black, linewidth=1.0)
-        
-        plt.plot(orb_x, orb_y, marker='o',color=red, linewidth=3.0)
-        plt.plot(sal_x, sal_y, marker='o',color=orange, linewidth=3.0)
-        plt.plot(sup_x, sup_y, marker='o',color=lightblue, linewidth=3.0)
-        plt.plot(hgi_x, hgi_y, marker='o',color=green, linewidth=3.0)
 
+        plt.plot(hgi_x, hgi_y, marker='o',color=green, linewidth=3.0)
+        plt.plot(hgi_x_2, hgi_y_2, marker='o',color=green, linewidth=3.0)
+        plt.plot(hgi_x_3, hgi_y_3, marker='o',color=green, linewidth=3.0)
+        plt.plot(sal_x, sal_y, marker='o',color=orange, linewidth=3.0)
+        # plt.plot(sup_x, sup_y, marker='o',color=lightblue, linewidth=3.0)
+        plt.plot(sup_x_2, sup_y_2, marker='o',color=lightblue, linewidth=3.0)
+        plt.plot(orb_x, orb_y, marker='o',color=red, linewidth=3.0)
+        
         plt.xlabel('x [m]')
         plt.ylabel('y [m]')
 
@@ -193,7 +200,12 @@ def showTrajectory(showGT = True, showLC=False, create = False):
         small_img = cv2.imread(f'{saved_folder}/kft.png', cv2.IMREAD_COLOR)
         small_img = cv2.cvtColor(small_img, cv2.COLOR_BGR2RGB)
 
-        small_img = small_img[78:190,331:480, :]
+        small_img = small_img[80:190,330:480, :]
+        scale_percent = 170 # percent of original size
+        width = int(small_img.shape[1] * scale_percent / 100)
+        height = int(small_img.shape[0] * scale_percent / 100)
+        dim = (width, height)
+        small_img = cv2.resize(small_img, (width,height), interpolation = cv2.INTER_AREA)
 
         # cv2.imshow("hey", cv2.imread(f'{saved_folder}/kft.png', cv2.IMREAD_COLOR))
         # while True:
@@ -209,7 +221,7 @@ def showTrajectory(showGT = True, showLC=False, create = False):
             axins.spines[axis].set_linewidth(1)
             axins.spines[axis].set_color('b')
 
-        axins.imshow(small_img, extent=(pos[0], pos[1], pos[2], pos[3]),interpolation='bicubic', origin="upper")
+        axins.imshow(small_img, extent=(pos[0], pos[1], pos[2], pos[3]),interpolation='bilinear', origin="upper")
 
         axins.set_xlim(pos[0], pos[1])
         axins.set_ylim(pos[2], pos[3])
@@ -280,9 +292,9 @@ def showTrajectory(showGT = True, showLC=False, create = False):
         if(cv2.waitKey(0) & 0xFF == ord('q')):
             break
 
-def getPointAt(txs, tzs, ind):
+def getPointAt(txs, tzs, ind, shift = 0):
     index = int(ind*len(txs))
-    return [txs[index]],[tzs[index]]
+    return [txs[index]+ shift],[tzs[index]]
 def col(r, g, b, a):
     return list(np.array([r, g, b, a*255])/255)
 
