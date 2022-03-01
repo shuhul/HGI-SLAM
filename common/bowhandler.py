@@ -2,7 +2,7 @@ import common.handler as handler
 import common.bagofwords as bow
 
 
-skip = 20
+skip = 10
 
 def run(sequence_folder, featureExtractor, max_frame=750, training=True, num_clusters=3, num_neighbors=3, detecting=True, max_distance=1):
     global skip
