@@ -17,7 +17,11 @@ import matplotlib.pyplot as plt
 import common.bowhandler as bowh
 
 
+scalex = 8
+scaley = 6
+
 all_keypoints = []
+model = None
 
 def preprocess_image(image, img_size):
     img = cv2.resize(image, img_size, interpolation=cv2.INTER_AREA)
@@ -27,7 +31,8 @@ def preprocess_image(image, img_size):
     img_gs = cv2.cvtColor(img_preprocessed, cv2.COLOR_RGB2GRAY)
     return img_preprocessed, img_gs, img_orig
 
-def extractHeatmap(img, model):
+def extractHeatmap(img):
+    global model
     size = (img.shape[1], img.shape[0])
     blur_size = 5
 
@@ -47,30 +52,38 @@ def extractHeatmap(img, model):
     return saliency_map
 
 
+def loadModel():
+    global model
+    model = ModelBCE(INPUT_SIZE[0]//scalex, INPUT_SIZE[1]//scaley, batch_size=8)
+    load_weights(model.net['output'], path='gen_', epochtoload=90)
+
+
+
 def runSalgan(frames):
-    global all_keypoints
+    global all_keypoints, model, scalex, scaley
 
     if len(frames) == 0:
         # print(f'Skipping {handler.readCurrentIndex()} already processed frames')
         return []
     descriptor_list = []
-
-    model = ModelBCE(INPUT_SIZE[0], INPUT_SIZE[1], batch_size=8)
-    load_weights(model.net['output'], path='gen_', epochtoload=90)
-
+   
     count = 1
     for frame in frames:
         print(f'Proccessing frame {count} of {len(frames)}')
-        img, img_gs, img_orig = preprocess_image(frame, (640, 480))
-        heatmap = extractHeatmap(img, model)
+        img, img_gs, img_orig = preprocess_image(frame, (640//scalex, 480//scaley))
+        heatmap = extractHeatmap(img)
         # heatmap = cv2.imread('heat.png', IMREAD_GRAYSCALE)
         # keypoints = generator.generateKeypoints(img_gs, heatmap)
         # pickle.dump(keypoints, open("keypoints", "wb"))
         # keypoints = pickle.load(open("keypoints", "rb"))
         # keypoints = generator.kpsToKPS(keypoints)
         # descriptor = generator.generateDescriptors(img_gs, keypoints)
-
-        keypoints, descriptor = generator.generateKeypointsAndDescriptors(img_gs, heatmap)
+        keypoints = []
+        descriptor = []
+        generator.scalex = scalex
+        generator.scaley = scaley
+        keypoints = generator.generateKeypoints(img_gs, heatmap)
+        # keypoints, descriptor = generator.generateKeypointsAndDescriptors(img_gs, heatmap)
         all_keypoints.append(keypoints)
 
         # print("\nDescriptor from SALGAN\n")
@@ -113,4 +126,5 @@ if __name__ == "__main__":
     sequence_folder = args.path_to_sequence
     num = args.num_imgs
     train = True if args.training == "y" else False
+    loadModel()
     bowh.run(sequence_folder, runSalgan, max_frame=num, training=train, num_clusters=8, num_neighbors=5, detecting=False, max_distance=1.2)

@@ -29,9 +29,10 @@ all_keypoints = []
 train = ""
 img_size = (0,0)
 keep_k_best = 0
+scale = 3
 
 def extract_superpoint_keypoints_and_descriptors(keypoint_map, descriptor_map,
-                                                 keep_k_points=1000):
+                                                 keep_k_points=100):
 
     def select_k_best(points, k):
         """ Select the k most probable points (and strip their proba).
@@ -52,7 +53,7 @@ def extract_superpoint_keypoints_and_descriptors(keypoint_map, descriptor_map,
     desc = descriptor_map[keypoints[:, 0], keypoints[:, 1]]
 
     # Convert from just pts to cv2.KeyPoints
-    keypoints = [cv2.KeyPoint(p[1], p[0], 1) for p in keypoints]
+    keypoints = [cv2.KeyPoint(p[1]*scale, p[0]*scale, 1) for p in keypoints]
 
     return keypoints, desc
 
@@ -98,7 +99,7 @@ def start():
     global weights_dir, sequence_folder, num, train, img_size, keep_k_best
 
     weights_name = "sp_v6"
-    img_size = (640, 480)
+    img_size = (640//scale, 480//scale)
     keep_k_best = 1000
 
     

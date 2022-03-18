@@ -438,19 +438,19 @@ def rotate(origin, point, angle):
     return qx, qy
 
 
-def showKeyPoints(image, keypoints):
+def showKeyPoints(image, keypoints, new=False):
     name = 'keypoints'
 
     cv2.namedWindow(name, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(name, 640*2, 480)
 
-    if not os.path.exists(f'{name}.png'):
+    if not os.path.exists(f'{name}.png') or new:
         for keypoint in keypoints:
             cv2.circle(image, (int(keypoint.pt[0]), int(keypoint.pt[1])), radius=1, color=(0,255,0), thickness=2)
     
+    cv2.imwrite(f'{name}.png', image)
     cv2.imshow(name, image)
+
     while True:
         if(cv2.waitKey(0) & 0xFF == ord('q')):
             break
-
-    cv2.imwrite(f'{name}.png', image)

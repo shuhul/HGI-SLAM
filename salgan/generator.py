@@ -17,9 +17,11 @@ g_ths = [20, 20, 20]
 has_selected = False
 keypoints = []
 num_sel = 0
+scalex = 1
+scaley = 1
 
 
-def generateKeypoints(image_gs, heatmap, num_points=300):
+def generateKeypoints(image_gs, heatmap, num_points=1000):
     global s_smooth, g_ths, has_selected, keypoints, num_sel, total_weight
     keypoints = []
     grad_image, oren_image = computeGradients(image_gs)
@@ -43,7 +45,7 @@ def selectKeypoint(patch, thresh):
     if not has_selected:
         c = max([patch.flatten()], key=lambda item:item[0])
         if c[0] > g_ths[thresh]:
-            keypoints.append(KeyPoint(c[1][0], c[1][1], c[0]))
+            keypoints.append(KeyPoint(c[1][0]*scalex, c[1][1]*scaley, c[0]))
             # keypoints.append(c[1])
             num_sel += 1
             has_selected = True
