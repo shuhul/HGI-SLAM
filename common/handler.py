@@ -55,12 +55,15 @@ def readFolder(folder):
     
     
 
-def getNewFrames(last=len(filenames),skip=4):
+def getNewFrames(first=-1,last=len(filenames),skip=4):
     global currentIndex
     images = []
     if last == -1:
         last=len(filenames)
-    readCurrentIndex()
+    if first == -1:
+        readCurrentIndex()
+    else:
+        currentIndex = first
     if last <= currentIndex:
         return [], [], last
     files = filenames[currentIndex:last:skip]
@@ -438,7 +441,7 @@ def rotate(origin, point, angle):
     return qx, qy
 
 
-def showKeyPoints(image, keypoints, new=False):
+def showKeyPoints(image, keypoints, save=False, new=False):
     name = 'keypoints'
 
     cv2.namedWindow(name, cv2.WINDOW_NORMAL)
@@ -448,7 +451,8 @@ def showKeyPoints(image, keypoints, new=False):
         for keypoint in keypoints:
             cv2.circle(image, (int(keypoint.pt[0]), int(keypoint.pt[1])), radius=1, color=(0,255,0), thickness=2)
     
-    cv2.imwrite(f'{name}.png', image)
+    if save:
+        cv2.imwrite(f'{name}.png', image)
     cv2.imshow(name, image)
 
     while True:

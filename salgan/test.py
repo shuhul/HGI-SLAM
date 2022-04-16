@@ -29,4 +29,4 @@ if __name__ == "__main__":
     # else:
     #     keypoints = []
     #     frames = [cv2.imread('keypoints.png')]
-    handler.showKeyPoints(frames[0], keypoints, new=True)
+    handler.showKeyPoints(frames[0], keypoints, save=True, new=True)

@@ -6,25 +6,27 @@ import os
 import cv2
 import time
 
-if __name__ == "__main__":
-    extractor.start()
 
-    handler.readFolder('/root/ORB_FR1/')
-    filenames, frames, last = handler.getNewFrames(last=100)
+def runSuperpoint(name, targetframe, i=0):
+    handler.readFolder(name)
+    # targetframe = 30
+    # handler.readFolder('/root/ORB_FR1/')
+    filenames, frames, last = handler.getNewFrames(first=targetframe, last=targetframe+1)
     start_time = time.time()
     extractor.runSuperpoint(frames)
     elapsed_time = time.time()-start_time
     print(f'Took {elapsed_time}')
-    keypoints = extractor.all_keypoints[0]
-    # print(keypoints)
+    keypoints = extractor.all_keypoints[i]
+    handler.showKeyPoints(frames[0], keypoints, save=False, new=True)
+
+if __name__ == "__main__":
+    extractor.start()
+
+    # runSuperpoint('/root/MONO_LONG/', 2200)
+    runSuperpoint('/root/MONO_LONG/', 1450)
+    # runSuperpoint('/root/ORB_FR1/', 30)
 
 
-    # if not os.path.exists('keypoints.png'):
-    #     handler.readFolder('/root/ORB_FR1/')
-    #     filenames, frames, last = handler.getNewFrames(last=4)
-    #     extractor.runSuperpoint(frames)
-    #     keypoints = extractor.all_keypoints[0]
-    # else:
-    #     keypoints = []
-    #     frames = [cv2.imread('keypoints.png')]
-    handler.showKeyPoints(frames[0], keypoints, new=True)
+    # for i in range(10):
+    #     targetframe = ((i+40)*50)
+    #     runSuperpoint('/root/MONO_LONG/', targetframe, i)
