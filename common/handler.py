@@ -448,6 +448,23 @@ def rotate(origin, point, angle):
     return qx, qy
 
 
+def saveKPs(keypoints):
+    outfile = open(f'kps', 'wb') 
+    kps = []
+    for kp in keypoints:
+        kps.append(kp.pt)
+    pickle.dump(kps, outfile)
+
+def readKPs():
+    infile = open(f'kps', 'rb')
+    kps = []
+    for kp in pickle.load(infile):
+        kps.append(cv2.KeyPoint(kp[0], kp[1], 1))
+    return kps
+  
+
+
+
 def showKeyPoints(image, keypoints, save=False, new=False):
     name = 'keypoints'
 
@@ -460,6 +477,26 @@ def showKeyPoints(image, keypoints, save=False, new=False):
     
     if save:
         cv2.imwrite(f'{name}.png', image)
+        saveKPs(keypoints)
+    cv2.imshow(name, image)
+
+    while True:
+        if(cv2.waitKey(0) & 0xFF == ord('q')):
+            break
+
+def showKeyPointsBoth(image, suppoints, salpoints):
+    name = 'keypoints'
+
+    cv2.namedWindow(name, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(name, 640*2, 480)
+
+    for sup in suppoints:
+            cv2.circle(image, (int(sup.pt[0]), int(sup.pt[1])), radius=1, color=(0, 238, 255), thickness=2)
+    for sal in salpoints:
+            cv2.circle(image, (int(sal.pt[0]), int(sal.pt[1])), radius=1, color=(219, 255, 120), thickness=2)
+
+    
+    cv2.imwrite(f'{name}.png', image)
     cv2.imshow(name, image)
 
     while True:

@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 import common.bowhandler as bowh
 
 
-scalex = 8
-scaley = 6
+scalex = 1 # 10
+scaley = 1 # 10
 
 all_keypoints = []
 model = None
@@ -38,6 +38,8 @@ def extractHeatmap(img):
 
     if img.shape[:2] != (model.inputHeight, model.inputWidth):
         img = cv2.resize(img, (model.inputWidth, model.inputHeight), interpolation=cv2.INTER_AREA)
+    
+    cv2.imwrite('in.png', img)
 
     blob = np.zeros((1, 3, model.inputHeight, model.inputWidth), theano.config.floatX)
 
@@ -54,7 +56,8 @@ def extractHeatmap(img):
 
 def loadModel():
     global model
-    model = ModelBCE(INPUT_SIZE[0]//scalex, INPUT_SIZE[1]//scaley, batch_size=8)
+    model = ModelBCE(INPUT_SIZE[0], INPUT_SIZE[1], batch_size=8)
+    # model = ModelBCE(640//scalex, 480//scaley, batch_size=8)
     load_weights(model.net['output'], path='gen_', epochtoload=90)
 
 
@@ -71,7 +74,11 @@ def runSalgan(frames):
     for frame in frames:
         print(f'Proccessing frame {count} of {len(frames)}')
         img, img_gs, img_orig = preprocess_image(frame, (640//scalex, 480//scaley))
+        # cv2.imwrite('orig.png', img_orig)
+        # cv2.imwrite('gray.png', img_gs)
+        # cv2.imwrite('in.png', img)
         heatmap = extractHeatmap(img)
+        cv2.imwrite('heat.png', heatmap)
         # heatmap = cv2.imread('heat.png', IMREAD_GRAYSCALE)
         # keypoints = generator.generateKeypoints(img_gs, heatmap)
         # pickle.dump(keypoints, open("keypoints", "wb"))
@@ -100,10 +107,6 @@ def runSalgan(frames):
         #     cv2.circle(img_orig, keypoint, 1, color=(0,255,0), thickness=2)
         # cv2.imwrite("key.png", img_orig)
 
-
-        # cv2.imwrite('orig.png', img_orig)
-        # cv2.imwrite('heat.png', heatmap)
-        
         
         descriptor_list.append(descriptor)
         count += 1
