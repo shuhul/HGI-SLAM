@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 import common.bowhandler as bowh
 
 
-scalex = 1 # 10
-scaley = 1 # 10
+scalex = 20 # 1
+scaley = 20 # 1
 
 all_keypoints = []
 model = None
@@ -39,7 +39,7 @@ def extractHeatmap(img):
     if img.shape[:2] != (model.inputHeight, model.inputWidth):
         img = cv2.resize(img, (model.inputWidth, model.inputHeight), interpolation=cv2.INTER_AREA)
     
-    cv2.imwrite('in.png', img)
+    # cv2.imwrite('in.png', img)
 
     blob = np.zeros((1, 3, model.inputHeight, model.inputWidth), theano.config.floatX)
 
@@ -56,8 +56,10 @@ def extractHeatmap(img):
 
 def loadModel():
     global model
-    model = ModelBCE(INPUT_SIZE[0], INPUT_SIZE[1], batch_size=8)
-    # model = ModelBCE(640//scalex, 480//scaley, batch_size=8)
+    if scalex == 1 and scaley == 1:
+        model = ModelBCE(INPUT_SIZE[0], INPUT_SIZE[1], batch_size=8)
+    else:
+        model = ModelBCE(640//scalex, 480//scaley, batch_size=8)
     load_weights(model.net['output'], path='gen_', epochtoload=90)
 
 
@@ -78,7 +80,7 @@ def runSalgan(frames):
         # cv2.imwrite('gray.png', img_gs)
         # cv2.imwrite('in.png', img)
         heatmap = extractHeatmap(img)
-        cv2.imwrite('heat.png', heatmap)
+        # cv2.imwrite('heat.png', heatmap)
         # heatmap = cv2.imread('heat.png', IMREAD_GRAYSCALE)
         # keypoints = generator.generateKeypoints(img_gs, heatmap)
         # pickle.dump(keypoints, open("keypoints", "wb"))
@@ -89,8 +91,8 @@ def runSalgan(frames):
         descriptor = []
         generator.scalex = scalex
         generator.scaley = scaley
-        keypoints = generator.generateKeypoints(img_gs, heatmap)
-        # keypoints, descriptor = generator.generateKeypointsAndDescriptors(img_gs, heatmap)
+        # keypoints = generator.generateKeypoints(img_gs, heatmap)
+        keypoints, descriptor = generator.generateKeypointsAndDescriptors(img_gs, heatmap)
         all_keypoints.append(keypoints)
 
         # print("\nDescriptor from SALGAN\n")

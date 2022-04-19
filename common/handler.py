@@ -491,9 +491,9 @@ def showKeyPointsBoth(image, suppoints, salpoints):
     cv2.resizeWindow(name, 640*2, 480)
 
     for sup in suppoints:
-            cv2.circle(image, (int(sup.pt[0]), int(sup.pt[1])), radius=1, color=(0, 238, 255), thickness=2)
+            cv2.circle(image, (int(sup.pt[0]), int(sup.pt[1])), radius=1, color=(0, 255, 0), thickness=2)
     for sal in salpoints:
-            cv2.circle(image, (int(sal.pt[0]), int(sal.pt[1])), radius=1, color=(219, 255, 120), thickness=2)
+            cv2.circle(image, (int(sal.pt[0]), int(sal.pt[1])), radius=1, color=(0, 0, 255), thickness=2)
 
     
     cv2.imwrite(f'{name}.png', image)
