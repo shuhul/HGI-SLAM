@@ -9,8 +9,6 @@ import time
 
 def runSuperpoint(name, targetframe, i=0):
     handler.readFolder(name)
-    # targetframe = 30
-    # handler.readFolder('/root/ORB_FR1/')
     filenames, frames, last = handler.getNewFrames(first=targetframe, last=targetframe+1)
     start_time = time.time()
     extractor.runSuperpoint(frames)
@@ -21,9 +19,12 @@ def runSuperpoint(name, targetframe, i=0):
 
 if __name__ == "__main__":
     extractor.start()
-
-    # runSuperpoint('/root/MONO_LONG/', 2200)
     runSuperpoint('/root/MONO_LONG/', 1450)
+
+
+
+    
+    # runSuperpoint('/root/MONO_LONG/', 2200)
     # runSuperpoint('/root/ORB_FR1/', 30)
 
 

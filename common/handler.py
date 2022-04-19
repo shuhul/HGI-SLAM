@@ -141,10 +141,11 @@ def showTrajectory(showGT = True, showLC=False, create = False):
     if create:
         print("\nComputing trajectory\n")
         black = col(33,41,48, 0.7)
-        lightblue = col(0, 53, 178, 1.0)
-        red = col(220, 32, 52, 1.0)
-        orange = col(255,165,0, 1.0)
-        green = col(11, 68, 31, 1.0)
+        lightblue = icol(0, 53, 178, 1.0)
+        red = icol(220, 32, 52, 1.0)
+        orange = icol(255,165,0, 1.0)
+        green = icol(11, 68, 31, 1.0)
+        blue = icol(0, 0, 255, 1.0)
 
         editGT = True
         if editGT:
@@ -222,7 +223,7 @@ def showTrajectory(showGT = True, showLC=False, create = False):
         # print(small_img.size)
         for axis in ['top','bottom','left','right']:
             axins.spines[axis].set_linewidth(1)
-            axins.spines[axis].set_color('b')
+            axins.spines[axis].set_color(blue)
 
         axins.imshow(small_img, extent=(pos[0], pos[1], pos[2], pos[3]),interpolation='bilinear', origin="upper")
 
@@ -232,7 +233,9 @@ def showTrajectory(showGT = True, showLC=False, create = False):
         plt.xticks(visible=False)
         plt.yticks(visible=False)
 
-        mark_inset(ax, axins, loc1=2, loc2=4, fc="none",  ec='b')
+        
+
+        mark_inset(ax, axins, loc1=2, loc2=4, fc="none",  ec=blue)
         # plt.draw()
         # ip = InsetPosition(ax,[0.7,0.7,0.3,0.3])
         # ax2.set_axes_locator(ip)
@@ -298,6 +301,10 @@ def showTrajectory(showGT = True, showLC=False, create = False):
 def getPointAt(txs, tzs, ind, shift = 0):
     index = int(ind*len(txs))
     return [txs[index]+ shift],[tzs[index]]
+
+def icol(r, g, b, a):
+    return col(255-r, 255-g, 255-b, a)
+
 def col(r, g, b, a):
     return list(np.array([r, g, b, a*255])/255)
 
