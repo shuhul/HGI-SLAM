@@ -577,6 +577,8 @@ def showKeyPoints(image, keypoints, save=False, new=False):
     cv2.namedWindow(name, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(name, 640*2, 480)
 
+    image = cv2.resize(image, (640, 480), interpolation = cv2.INTER_AREA)
+
     if not os.path.exists(f'{name}.png') or new:
         for keypoint in keypoints:
             cv2.circle(image, (int(keypoint.pt[0]), int(keypoint.pt[1])), radius=1, color=(0,255,0), thickness=2)
@@ -596,10 +598,13 @@ def showKeyPointsBoth(image, suppoints, salpoints):
     cv2.namedWindow(name, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(name, 640*2, 480)
 
+    image = cv2.resize(image, (640, 480), interpolation = cv2.INTER_AREA)
+
+
     for sup in suppoints:
             cv2.circle(image, (int(sup.pt[0]), int(sup.pt[1])), radius=1, color=(0, 255, 0), thickness=2)
     for sal in salpoints:
-            cv2.circle(image, (int(sal.pt[0]), int(sal.pt[1])), radius=1, color=(0, 0, 255), thickness=2)
+            cv2.circle(image, (int(sal.pt[0]), int(sal.pt[1])), radius=1, color=(0, 255, 0), thickness=2)
 
     
     cv2.imwrite(f'{name}.png', image)

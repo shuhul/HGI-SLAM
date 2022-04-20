@@ -15,12 +15,15 @@ def runSuperpoint(name, targetframe, i=0):
     elapsed_time = time.time()-start_time
     print(f'Took {elapsed_time}')
     keypoints = extractor.all_keypoints[i]
-    handler.showKeyPoints(frames[0], keypoints, save=False, new=True)
+    handler.showKeyPoints(frames[0], keypoints, save=True, new=True)
 
 if __name__ == "__main__":
     extractor.start()
     # runSuperpoint('/root/MONO_LONG/', 1450)
-    runSuperpoint('/root/KITTI_06/', 26)
+    # runSuperpoint('/root/KITTI_06/', 26, i=0)
+    # runSuperpoint('/root/KITTI_06/', 857, i=1)
+    # runSuperpoint('/root/KITTI_06/', 171, i=2)
+    runSuperpoint('/root/KITTI_06/', 997, i=0)
 
 
 

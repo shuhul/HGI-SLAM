@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 import common.bowhandler as bowh
 
 
-scalex = 20 # 1
-scaley = 20 # 1
+scalex = 1 # 1
+scaley = 1 # 1
 
 all_keypoints = []
 model = None

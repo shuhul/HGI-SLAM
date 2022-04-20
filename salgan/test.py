@@ -16,12 +16,16 @@ def runSalgan(name, targetframe, i=0):
     elapsed_time = time.time()-start_time
     print(f'Took {elapsed_time}')
     keypoints = predictor.all_keypoints[i]
-    handler.showKeyPoints(frames[0], keypoints, save=False, new=True)
+    handler.showKeyPoints(frames[0], keypoints, save=True, new=True)
 
 if __name__ == "__main__":
 
     predictor.start()
-    runSalgan('/root/MONO_LONG/', 1450)
+    # runSalgan('/root/MONO_LONG/', 1450)
+    # runSalgan('/root/KITTI_06/', 26, i=0)
+    # runSalgan('/root/KITTI_06/', 857, i=0)
+    # runSalgan('/root/KITTI_06/', 171, i=0)
+    runSalgan('/root/KITTI_06/', 997, i=0)
 
 
     # runSuperpoint('/root/MONO_LONG/', 2200)
