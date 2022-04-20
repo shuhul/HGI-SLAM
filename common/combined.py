@@ -18,4 +18,4 @@ if __name__ == "__main__":
     thresh = args.thresh
     showLC = args.training == "m" or train
     
-    bowh.combined(sequence_folder, num_frames=num, detecting=train,showLC=showLC, sup_weight=1, sal_weight=1, sim_threshold=thresh)
+    bowh.combined(sequence_folder, num_frames=num, detecting=train,showLC=showLC, sup_weight=1, sal_weight=0.4, sim_threshold=thresh)

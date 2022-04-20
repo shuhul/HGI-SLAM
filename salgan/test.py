@@ -21,11 +21,12 @@ def runSalgan(name, targetframe, i=0):
 if __name__ == "__main__":
 
     predictor.start()
+    runSalgan('/root/MONO_LONG/', 2200)
     # runSalgan('/root/MONO_LONG/', 1450)
     # runSalgan('/root/KITTI_06/', 26, i=0)
     # runSalgan('/root/KITTI_06/', 857, i=0)
     # runSalgan('/root/KITTI_06/', 171, i=0)
-    runSalgan('/root/KITTI_06/', 997, i=0)
+    # runSalgan('/root/KITTI_06/', 997, i=0)
 
 
     # runSuperpoint('/root/MONO_LONG/', 2200)

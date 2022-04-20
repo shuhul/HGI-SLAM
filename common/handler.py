@@ -579,9 +579,11 @@ def showKeyPoints(image, keypoints, save=False, new=False):
 
     image = cv2.resize(image, (640, 480), interpolation = cv2.INTER_AREA)
 
-    if not os.path.exists(f'{name}.png') or new:
-        for keypoint in keypoints:
-            cv2.circle(image, (int(keypoint.pt[0]), int(keypoint.pt[1])), radius=1, color=(0,255,0), thickness=2)
+    # if not os.path.exists(f'{name}.png') or new:
+    #     for keypoint in keypoints:
+    #         cv2.circle(image, (int(keypoint.pt[0]), int(keypoint.pt[1])), radius=1, color=(0,255,0), thickness=2)
+    #         # if random.random() > 0.7:
+    #         #     cv2.circle(image, (int(keypoint.pt[0]), int(keypoint.pt[1])), radius=random.randrange(10,50), color=(0,0,255), thickness=2)
     
     if save:
         cv2.imwrite(f'{name}.png', image)

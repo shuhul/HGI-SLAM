@@ -32,7 +32,7 @@ keep_k_best = 0
 scale = 3
 
 def extract_superpoint_keypoints_and_descriptors(keypoint_map, descriptor_map,
-                                                 keep_k_points=100):
+                                                 keep_k_points=1000):
 
     def select_k_best(points, k):
         """ Select the k most probable points (and strip their proba).
