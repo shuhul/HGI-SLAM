@@ -139,10 +139,41 @@ def showVideo(skip=4):
 
 
 def showMap():
+    name = 'map'
     black = col(33,41,48, 0.7)
+    red = col(220, 32, 52, 1.0)
     txs, tzs = readGTKITTI()
     plt.plot(txs, tzs, color=black)
-    plt.savefig(f'{saved_folder}/map.png')
+    lcs = [(26,857), (171, 997)]
+    lcs = np.array(lcs).flatten()
+    plt.plot([txs[i] for i in lcs], [tzs[i] for i in lcs], marker='o', color=red, linewidth=3.0, linestyle='')
+
+    plt.savefig(f'{saved_folder}/{name}.png')
+    cv2.namedWindow(name, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(name, 640, 560)
+    cv2.imshow(name, cv2.imread(f'{saved_folder}/map.png', cv2.IMREAD_COLOR))
+    while True:
+        if(cv2.waitKey(0) & 0xFF == ord('q')):
+            break
+
+
+
+    # timestep = int((30.9/len(txs))*1000)
+    # skip = 10
+    # for i in range(len(txs)//skip):
+    #     plt.plot(txs[:(i*skip)], tzs[:(i*skip)], color=black)
+    #     plt.savefig(f'{saved_folder}/map.png')
+        # name = 'map'
+        # cv2.namedWindow(name, cv2.WINDOW_NORMAL)
+        # cv2.resizeWindow(name, 640, 560)
+        # cv2.imshow(name, cv2.imread(f'{saved_folder}/map.png', cv2.IMREAD_COLOR))
+    #     out = cv2.waitKey(timestep)
+    #     if (out & 0xFF) == ord('s'):
+    #         print(i*skip)
+    #     if (out & 0xFF == ord('q')):
+    #         break
+    # cv2.destroyAllWindows()
+
 
 
 def showTrajectory(showGT = True, showLC=False, create = False):
