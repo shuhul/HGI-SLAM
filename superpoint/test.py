@@ -19,7 +19,8 @@ def runSuperpoint(name, targetframe, i=0):
 
 if __name__ == "__main__":
     extractor.start()
-    runSuperpoint('/root/MONO_LONG/', 1450)
+    # runSuperpoint('/root/MONO_LONG/', 1450)
+    runSuperpoint('/root/KITTI_06/', 26)
 
 
 

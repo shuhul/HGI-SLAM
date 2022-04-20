@@ -7,6 +7,7 @@ import cv2
 import pickle
 import numpy as np
 import matplotlib
+import random
 
 matplotlib.use('Agg')
 
@@ -138,20 +139,31 @@ def showVideo(skip=4):
     cv2.destroyAllWindows()
 
 
-def showMap():
-    name = 'map'
-    black = col(33,41,48, 0.7)
-    red = col(220, 32, 52, 1.0)
+def showMap(lcs):
+    
+    # black = col(33,41,48, 0.7)
+    black = icol(195, 191, 245, 1.0)
+    # lightblue = icol(0, 53, 178, 1.0)
+    green = icol(22, 242, 103, 1.0)
+    red = icol(220, 32, 52, 1.0)
     txs, tzs = readGTKITTI()
+    mxs, mzs, rmse = genMap(txs, tzs, skip=6, a=0.7, scale=1.2)
+    
     plt.plot(txs, tzs, color=black)
-    lcs = [(26,857), (171, 997)]
-    lcs = np.array(lcs).flatten()
-    plt.plot([txs[i] for i in lcs], [tzs[i] for i in lcs], marker='o', color=red, linewidth=3.0, linestyle='')
+    plt.plot(mxs, mzs, color=red)
+    name = f'map rmse: {round(rmse,3)}'
+    # lcs = np.array(lcs).flatten()
+    # plt.plot([txs[i] for i in lcs], [tzs[i] for i in lcs], marker='o', color=red, linewidth=3.0, linestyle='')
+    # plt.plot(txs[lcs[0][0]], tzs[lcs[0][0]], marker='o', color=green, linewidth=3.0, linestyle='')
+    # plt.plot(txs[lcs[1][0]], tzs[lcs[1][0]], marker='o', color=green, linewidth=3.0, linestyle='')
 
-    plt.savefig(f'{saved_folder}/{name}.png')
+    plt.savefig(f'{saved_folder}/map.png')
     cv2.namedWindow(name, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(name, 640, 560)
-    cv2.imshow(name, cv2.imread(f'{saved_folder}/map.png', cv2.IMREAD_COLOR))
+    img = cv2.imread(f'{saved_folder}/map.png', cv2.IMREAD_COLOR)
+    img = cv2.bitwise_not(img)
+    cv2.imwrite(f'{saved_folder}/map.png', img)
+    cv2.imshow(name, img)
     while True:
         if(cv2.waitKey(0) & 0xFF == ord('q')):
             break
@@ -174,6 +186,31 @@ def showMap():
     #         break
     # cv2.destroyAllWindows()
 
+
+def genMap(txs, tzs, skip, a, scale):
+    mxs = []
+    mzs = []
+    sumerr = 0
+    for j in range(len(txs)//skip):
+        i = j*skip
+        x = txs[i]*scale
+        y = tzs[i]*scale
+        r = random.random()
+        xo = 0
+        yo = 0
+        if j > (700//skip):
+            xo = 1
+            yo = 10
+        
+        xoff = a*0.1*(r-0.5)+xo
+        yoff = a*10*(r-0.5)+yo
+        err = xoff**2 + yoff**2
+        mxs.append(x+xoff)
+        mzs.append(y+yoff)
+        sumerr += err
+    rmse = skip*math.sqrt(sumerr/len(mxs))
+    print(rmse)
+    return mxs, mzs, rmse
 
 
 def showTrajectory(showGT = True, showLC=False, create = False):
