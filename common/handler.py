@@ -130,10 +130,20 @@ def showVideo(skip=4):
         name = 'Video'
         cv2.namedWindow(name, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(name, 640, 480)
-        cv2.imshow(name, cv2.imread(f'{sequence_folder}/{filename}', cv2.IMREAD_COLOR))
+        img = cv2.imread(f'{sequence_folder}/{filename}', cv2.IMREAD_COLOR)
+        img = cv2.resize(img, (640, 480), interpolation = cv2.INTER_AREA)
+        cv2.imshow(name, img)
         if(cv2.waitKey(timestep) & 0xFF == ord('q')):
             break
     cv2.destroyAllWindows()
+
+
+def showMap():
+    black = col(33,41,48, 0.7)
+    txs, tzs = readGTKITTI()
+    plt.plot(txs, tzs, color=black)
+    plt.savefig(f'{saved_folder}/map.png')
+
 
 def showTrajectory(showGT = True, showLC=False, create = False):
     global origin, theta, scale
@@ -421,6 +431,34 @@ def readGT():
                 data = lines[i].split(" ")
                 xs.append(float(data[1]))
                 zs.append(float(data[2]))
+    return xs, zs
+
+def readGTKITTI():
+    xs = []
+    zs = []
+    with open(f'{sequence_folder}/groundtruth.txt', 'r') as kftFile:
+        lines = kftFile.readlines()
+        for line in lines:
+            T_w_cam0 = np.fromstring(line, dtype=float, sep=' ')
+            # print(T_w_cam0)
+            T_w_cam0 = T_w_cam0.reshape(3, 4)
+            x = T_w_cam0[0, 3]
+            z = T_w_cam0[2, 3]
+            # print(T_w_cam0)
+            R, T = np.hsplit(T_w_cam0, np.array([3]))
+            # print(R)
+            # print(T)
+            # T_w_cam0 = np.vstack((T_w_cam0, [0, 0, 0, 1]))
+            C = np.dot(-np.transpose(R), T)
+            # xs.append(C[0])
+            # zs.append(C[2])
+            xs.append(x)
+            zs.append(z)
+            # print(T_w_cam0)
+            # data = line.split(" ")
+            # xs.append(float(data[0]))
+            # zs.append(float(data[2]))
+            # break
     return xs, zs
 
 def readGT2():
