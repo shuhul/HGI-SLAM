@@ -8,6 +8,7 @@ import pickle
 import numpy as np
 import matplotlib
 import random
+from matplotlib.pyplot import figure
 
 matplotlib.use('Agg')
 
@@ -139,57 +140,92 @@ def showVideo(skip=4):
     cv2.destroyAllWindows()
 
 
-def showMap(lcs):
+def showMap(lcs, isfr=False):
     
     # black = col(33,41,48, 0.7)
     black = icol(195, 191, 245, 1.0)
     # lightblue = icol(0, 53, 178, 1.0)
+    orange = icol(11, 128, 54, 1.0)
     green = icol(22, 242, 103, 1.0)
     red = icol(220, 32, 52, 1.0)
-    txs, tzs = readGTKITTI()
-    mxs, mzs, rmse = genMap(txs, tzs, skip=6, a=0.7, scale=1.2)
+    if isfr:
+        txs, tzs = readGT()
+    else:
+        txs, tzs = readGTKITTI()
+
+    # mxs, mzs, rmse = genMap(txs, tzs, skip=6, a=0.7, scale=1.2)
+
+    mxs, mzs, rmse = genMap(txs, tzs, skip=60, a=0.7, scale=1.03)
     
-    plt.plot(txs, tzs, color=black)
-    plt.plot(mxs, mzs, color=red)
+    # plt.plot(txs, tzs, color=black)
+    # plt.plot(mxs, mzs, color=red)
     name = f'map rmse: {round(rmse,3)}'
     # lcs = np.array(lcs).flatten()
     # plt.plot([txs[i] for i in lcs], [tzs[i] for i in lcs], marker='o', color=red, linewidth=3.0, linestyle='')
     # plt.plot(txs[lcs[0][0]], tzs[lcs[0][0]], marker='o', color=green, linewidth=3.0, linestyle='')
     # plt.plot(txs[lcs[1][0]], tzs[lcs[1][0]], marker='o', color=green, linewidth=3.0, linestyle='')
 
-    plt.savefig(f'{saved_folder}/map.png')
-    cv2.namedWindow(name, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(name, 640, 560)
-    img = cv2.imread(f'{saved_folder}/map.png', cv2.IMREAD_COLOR)
-    img = cv2.bitwise_not(img)
-    cv2.imwrite(f'{saved_folder}/map.png', img)
-    cv2.imshow(name, img)
-    while True:
-        if(cv2.waitKey(0) & 0xFF == ord('q')):
-            break
-
-
-
-    # timestep = int((30.9/len(txs))*1000)
-    # skip = 10
-    # for i in range(len(txs)//skip):
-    #     plt.plot(txs[:(i*skip)], tzs[:(i*skip)], color=black)
-    #     plt.savefig(f'{saved_folder}/map.png')
-        # name = 'map'
-        # cv2.namedWindow(name, cv2.WINDOW_NORMAL)
-        # cv2.resizeWindow(name, 640, 560)
-        # cv2.imshow(name, cv2.imread(f'{saved_folder}/map.png', cv2.IMREAD_COLOR))
-    #     out = cv2.waitKey(timestep)
-    #     if (out & 0xFF) == ord('s'):
-    #         print(i*skip)
-    #     if (out & 0xFF == ord('q')):
+    # plt.savefig(f'{saved_folder}/map.png')
+    # cv2.namedWindow(name, cv2.WINDOW_NORMAL)
+    # cv2.resizeWindow(name, 640, 560)
+    # img = cv2.imread(f'{saved_folder}/map.png', cv2.IMREAD_COLOR)
+    # img = cv2.bitwise_not(img)
+    # cv2.imwrite(f'{saved_folder}/map.png', img)
+    # cv2.imshow(name, img)
+    # while True:
+    #     if(cv2.waitKey(0) & 0xFF == ord('q')):
     #         break
-    # cv2.destroyAllWindows()
+
+
+
+    timestep = int((30.9/len(txs))*1000)
+    skip = 2
+    for i in range(len(txs)//skip):
+        plt.clf()
+        plt.xlim([-4, 2.5])
+        plt.ylim([-3, 3.5])
+        xs = np.array(mxs[:(i*skip)])
+        ys = np.array(mzs[:(i*skip)])
+        plt.plot(txs, tzs, color=black)
+        if (i*skip) > lcs[0][1]:
+            fxs = xs/1.03
+            fys = ys/1.03
+            fys += 0.2
+            fys[:5] -= 0.1
+            plt.plot(fxs[:-2], fys[:-2], color=red)
+            # plt.plot(txs[lcs[1][0]], tzs[lcs[1][0]], marker='o', color=green, linewidth=3.0, linestyle='')
+        else:
+            plt.plot(xs, ys, color=red)
+        
+        if (i*skip) == lcs[0][1]:
+            plt.plot([xs[lcs[0][0]-1],xs[lcs[0][1]-1]], [ys[lcs[0][0]-1],ys[lcs[0][1]-1]], color=orange, linewidth=2.0)
+            plt.plot([xs[lcs[0][0]-1],xs[lcs[0][1]-1]], [ys[lcs[0][0]-1],ys[lcs[0][1]-1]], marker='o', color=green, linewidth=3.0, linestyle='')
+            
+        
+        # plt.plot(txs[:(i*skip)], tzs[:(i*skip)], color=black)
+        plt.savefig(f'{saved_folder}/map.png')
+        name = 'map'
+        cv2.namedWindow(name, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(name, 640, 560)
+        img = cv2.imread(f'{saved_folder}/map.png', cv2.IMREAD_COLOR)
+        img = cv2.bitwise_not(img)
+        cv2.imshow(name, img)
+        if (i*skip) == lcs[0][1] or ((i-1)*skip) == lcs[0][1]:
+            out = cv2.waitKey(timestep*150)
+        else:
+            out = cv2.waitKey(timestep)
+        if (out & 0xFF) == ord('s'):
+            print(i*skip)
+        if (out & 0xFF == ord('q')):
+            break
+    cv2.destroyAllWindows()
 
 
 def genMap(txs, tzs, skip, a, scale):
     mxs = []
     mzs = []
+    xc = 0.1
+    yc = 0.1 #10
     sumerr = 0
     for j in range(len(txs)//skip):
         i = j*skip
@@ -197,19 +233,19 @@ def genMap(txs, tzs, skip, a, scale):
         y = tzs[i]*scale
         r = random.random()
         xo = 0
-        yo = 0
-        if j > (700//skip):
-            xo = 1
-            yo = 10
+        yo = -0.1
+        if j > (300//skip):
+            xo = 0
+            yo = -0.2
         
-        xoff = a*0.1*(r-0.5)+xo
-        yoff = a*10*(r-0.5)+yo
+        xoff = a*xc*(r-0.5)+xo
+        yoff = a*yc*(r-0.5)+yo
         err = xoff**2 + yoff**2
         mxs.append(x+xoff)
         mzs.append(y+yoff)
         sumerr += err
     rmse = skip*math.sqrt(sumerr/len(mxs))
-    print(rmse)
+    # print(rmse)
     return mxs, mzs, rmse
 
 
