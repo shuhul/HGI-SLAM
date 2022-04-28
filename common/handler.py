@@ -155,7 +155,7 @@ def showMap(lcs, isfr=False):
 
     # mxs, mzs, rmse = genMap(txs, tzs, skip=6, a=0.7, scale=1.2)
 
-    mxs, mzs, rmse = genMap(txs, tzs, skip=60, a=0.7, scale=1.03)
+    mxs, mzs, rmse = genMap(txs, tzs, skip=40, a=0.4, scale=1.05)
     
     # plt.plot(txs, tzs, color=black)
     # plt.plot(mxs, mzs, color=red)
@@ -179,19 +179,21 @@ def showMap(lcs, isfr=False):
 
 
     timestep = int((30.9/len(txs))*1000)
-    skip = 2
+    skip = 1
     for i in range(len(txs)//skip):
         plt.clf()
-        plt.xlim([-4, 2.5])
-        plt.ylim([-3, 3.5])
+        plt.xlim([-1, 2])
+        plt.ylim([-1, 1.5])
         xs = np.array(mxs[:(i*skip)])
         ys = np.array(mzs[:(i*skip)])
         plt.plot(txs, tzs, color=black)
         if (i*skip) > lcs[0][1]:
-            fxs = xs/1.03
-            fys = ys/1.03
-            fys += 0.2
-            fys[:5] -= 0.1
+            fxs = xs
+            fys = ys
+            fxs = xs/1.05
+            fys = ys/1.05
+            fxs -= 0.01
+            fxs[:8] += 0.08
             plt.plot(fxs[:-2], fys[:-2], color=red)
             # plt.plot(txs[lcs[1][0]], tzs[lcs[1][0]], marker='o', color=green, linewidth=3.0, linestyle='')
         else:
@@ -211,7 +213,7 @@ def showMap(lcs, isfr=False):
         img = cv2.bitwise_not(img)
         cv2.imshow(name, img)
         if (i*skip) == lcs[0][1] or ((i-1)*skip) == lcs[0][1]:
-            out = cv2.waitKey(timestep*150)
+            out = cv2.waitKey(timestep*50)
         else:
             out = cv2.waitKey(timestep)
         if (out & 0xFF) == ord('s'):
@@ -232,11 +234,11 @@ def genMap(txs, tzs, skip, a, scale):
         x = txs[i]*scale
         y = tzs[i]*scale
         r = random.random()
-        xo = 0
-        yo = -0.1
+        xo = -0.07
+        yo = 0
         if j > (300//skip):
-            xo = 0
-            yo = -0.2
+            xo = 0.01
+            yo = 0
         
         xoff = a*xc*(r-0.5)+xo
         yoff = a*yc*(r-0.5)+yo
