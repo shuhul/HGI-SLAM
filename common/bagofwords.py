@@ -13,6 +13,7 @@ from sklearn.preprocessing import StandardScaler
 import common.handler as handler
 import math
 import os
+import pickle
 
 
 def create_patch_clusters(descriptor_list, num_clusters):  
@@ -157,7 +158,7 @@ def detectCombinedLC(sup_weight, sal_weight, max_distance, max_frames=750, skip=
     os.chdir('../common')
 
     
-
+    sims = []
     lcc = []
     for i in range(len(sup_desc)):
         os.chdir('../superpoint')
@@ -169,12 +170,17 @@ def detectCombinedLC(sup_weight, sal_weight, max_distance, max_frames=750, skip=
         sup_min = sup_distances[sup_min_index]
         sal_avg = np.average(sal_distances[1:])
         distance = ((sup_min*10.0*sup_weight) + (sal_avg*0.833*sal_weight))/(sup_weight+sal_weight)
+        similarity = round(1/distance,3)
+        sims.append(similarity)
         isLc = isLoopClosure(distance, max_distance) and (skip*sup_indices[sup_min_index]) < max_frames
-        print(f'Processing frame {i*skip} Similarity: {round(1/distance,3)} Candidate: {isLc}')
+        print(f'Processing frame {i*skip} Similarity: {similarity} Candidate: {isLc}')
         if isLc:
             lcc.append([i*skip , skip*sup_indices[sup_min_index]])
-
+    
     os.chdir('../common')
+
+    simsFile = open('sims', 'wb') 
+    pickle.dump(sims, simsFile)
     
     print(f'\nDetected {len(lcc)} loop closure canidates')
 
