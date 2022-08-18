@@ -2,6 +2,8 @@ from curses import raw
 import handler
 import pickle
 import matplotlib.pyplot as plt
+from matplotlib.pyplot import figure
+
 import cv2
 import numpy as np
 import scipy.stats as st
@@ -18,6 +20,8 @@ if __name__ == "__main__":
 
     # handler.showVideo(skip=10)
 
+
+
     simsFile = open('sims', 'rb')
     rawsims = pickle.load(simsFile)
 
@@ -30,6 +34,9 @@ if __name__ == "__main__":
 
 
     # plt.hist(sims, bins=50, cmap=)
+    # figure(figsize=(7, 5.5))
+    plt.rcParams.update({'font.size': 16})
+    
 
     scale = 1/23
     n, bins, patches = plt.hist(sims, bins=15, weights=scale*np.ones_like(sims))
@@ -53,6 +60,7 @@ if __name__ == "__main__":
 
     plt.ylabel('Relative Magnitude')
     plt.xlabel('Similarity')
+    plt.tight_layout()
     plt.savefig('sim.png')
 
     img = cv2.imread('sim.png', cv2.IMREAD_COLOR)
