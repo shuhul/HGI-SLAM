@@ -1,5 +1,6 @@
 import common.handler as handler
 import common.bagofwords as bow
+import random
 
 
 skip = 10
@@ -65,7 +66,7 @@ def run(sequence_folder, featureExtractor, max_frame=750, training=True, num_clu
     #     print('No loop closures found')
 
 
-def combined(sequence_folder, num_frames=750, detecting=True, showLC=False, sup_weight=1, sal_weight=1, sim_threshold=1):
+def combined(sequence_folder, num_frames=750, detecting=True, showLC=False, sup_weight=1, sal_weight=1, sim_threshold=1, pr_mode=False):
     global skip
 
     distance_threshold = 1/sim_threshold
@@ -80,18 +81,31 @@ def combined(sequence_folder, num_frames=750, detecting=True, showLC=False, sup_
     else:
         print('Skipping already detected loop closures')
     
-    
     loop_closure_connections = bow.getLCC()
-    
-    print(f'\n-------Detected {len(loop_closure_connections)} loop closures--------\n')
 
-    if len(loop_closure_connections) != 0:
+    nlc_detected = len(loop_closure_connections) # nlc = num loop closures
 
-        print(f'Detected loop closures between indices {loop_closure_connections}\n')
+    nlc_correct_detected = nlc_detected*bow.getPercentageCorrect(0.82,1.0) # Normal = 0.84 1.0, Orb = 0.7 0.82
 
-        if showLC:
-            handler.showLoopClosurePairs(loop_closure_connections)
+    nlc_correct_total = nlc_correct_detected/bow.getPercentageCorrect(0.82,1.0) # Normal = 0.84 1.0, Orb = 0.7 0.82
+
+    if not pr_mode:
+        print(f'\n-------Detected {nlc_detected} loop closures--------\n')
+
+        if len(loop_closure_connections) != 0:
+
+            print(f'Detected loop closures between indices {loop_closure_connections}\n')
+
+            if showLC:
+                handler.showLoopClosurePairs(loop_closure_connections)
+
+        else:
+            print('No loop closures found')
 
     else:
-        print('No loop closures found')
+        print(f'\n-------Average Precision: {round(100*nlc_correct_detected/nlc_detected,2)}%  --------')
+
+        print(f'\n-------Average Recall:    {round(100*nlc_correct_detected/nlc_correct_total,2)}%  --------\n')
+
+        
     

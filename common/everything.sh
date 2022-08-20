@@ -12,6 +12,6 @@ export TESTING_DATASET_PATH="/root/MONO_LONG"
 export NUM_IMGS=400
 # python3 /root/HGI_SLAM/superpoint/extractor.py $TESTING_DATASET_PATH $NUM_IMGS "n"
 # python3 /root/HGI_SLAM/salgan/predictor.py $TESTING_DATASET_PATH $NUM_IMGS "n"
-# python3 /root/HGI_SLAM/common/combined.py $TESTING_DATASET_PATH $NUM_IMGS 0.5 "y"
-/root/HGI_SLAM/orbslam/orbslam2.sh $TESTING_DATASET_PATH $NUM_IMGS "m"
+python3 /root/HGI_SLAM/common/combined.py $TESTING_DATASET_PATH $NUM_IMGS 0.5 "n"
+# /root/HGI_SLAM/orbslam/orbslam2.sh $TESTING_DATASET_PATH $NUM_IMGS "m"
 # python3 /root/HGI_SLAM/common/end.py $TESTING_DATASET_PATH "m"

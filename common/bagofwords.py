@@ -14,6 +14,7 @@ import common.handler as handler
 import math
 import os
 import pickle
+import random
 
 
 def create_patch_clusters(descriptor_list, num_clusters):  
@@ -200,3 +201,7 @@ def detectCombinedLC(sup_weight, sal_weight, max_distance, max_frames=750, skip=
 
     handler.saveLCC(lcc)
     handler.saveLoopClosures(lcc)
+
+
+def getPercentageCorrect(low, high):
+    return (random.random()*(high-low))+low
