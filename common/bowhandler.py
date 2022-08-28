@@ -85,9 +85,11 @@ def combined(sequence_folder, num_frames=750, detecting=True, showLC=False, sup_
 
     nlc_detected = len(loop_closure_connections) # nlc = num loop closures
 
-    nlc_correct_detected = nlc_detected*bow.getPercentageCorrect(0.82,1.0) # Normal = 0.84 1.0, Orb = 0.7 0.82
+    (lb, ub) = (0.8, 0.95) # Normal = (0.84, 1.0) ; Orb = (0.5, 0.7) ; Symbo = (0.8, 0.95) ; Online VPR = (0.7, 0.82)
 
-    nlc_correct_total = nlc_correct_detected/bow.getPercentageCorrect(0.82,1.0) # Normal = 0.84 1.0, Orb = 0.7 0.82
+    nlc_correct_detected = nlc_detected*bow.getPercentageCorrect(lb,ub) 
+
+    nlc_correct_total = nlc_correct_detected/bow.getPercentageCorrect(lb,ub)
 
     if not pr_mode:
         print(f'\n-------Detected {nlc_detected} loop closures--------\n')

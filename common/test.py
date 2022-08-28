@@ -3,6 +3,7 @@ import os
 import cv2
 import math
 import random
+import common.bagofwords as bow
 
 
 def runBoth(name, targetframe, i=0):
@@ -34,9 +35,17 @@ def runOrb(name, targetframe):
 
 
 if __name__ == "__main__":
-    runOrb('/root/KITTI_06/', 997)
+    # runOrb('/root/KITTI_06/', 997)
     # runBoth('/root/MONO_LONG/', 1450)
     # runBoth('/root/KITTI_06/', 26)
     # runBoth('/root/KITTI_06/', 857)
     # runBoth('/root/KITTI_06/', 171)
     # runBoth('/root/KITTI_06/', 997)
+
+    (lb, ub) = (0.100, 0.220)
+
+    numTests = 10
+    prec = 3
+
+    for i in range(0,numTests):
+        print(f'Test {i+1} of {numTests}: {round(bow.getPercentageCorrect(lb,ub),prec)}')
